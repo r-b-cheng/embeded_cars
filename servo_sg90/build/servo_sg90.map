@@ -1,0 +1,92 @@
+
+Discarded input sections
+
+ .text          0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+ .data          0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+ .bss           0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+ .text          0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+ .data          0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+ .bss           0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x00000000         0x00040000         xr
+SRAM             0x20000000         0x00008000         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+LOAD C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+                0x20008000                        _stack_top = (ORIGIN (SRAM) + LENGTH (SRAM))
+
+.isr_vector     0x00000000      0x26c
+ *(.isr_vector)
+ .isr_vector    0x00000000      0x26c C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+
+.text           0x0000026c      0x1fc
+ *(.text*)
+ .text.Reset_Handler
+                0x0000026c       0x40 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+                0x0000026c                Reset_Handler
+ .text.startup.main
+                0x000002ac      0x1b4 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+                0x000002ac                main
+ *(.rodata*)
+ .rodata.sweep_us
+                0x00000460        0x8 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+                0x00000468                        . = ALIGN (0x4)
+
+.glue_7         0x00000468        0x0
+ .glue_7        0x00000468        0x0 linker stubs
+
+.glue_7t        0x00000468        0x0
+ .glue_7t       0x00000468        0x0 linker stubs
+
+.vfp11_veneer   0x00000468        0x0
+ .vfp11_veneer  0x00000468        0x0 linker stubs
+
+.v4_bx          0x00000468        0x0
+ .v4_bx         0x00000468        0x0 linker stubs
+
+.iplt           0x00000468        0x0
+ .iplt          0x00000468        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+
+.rel.dyn        0x00000468        0x0
+ .rel.iplt      0x00000468        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+
+.data           0x20000000        0x0 load address 0x00000468
+                0x20000000                        _data_start = .
+ *(.data*)
+                0x20000000                        . = ALIGN (0x4)
+                0x20000000                        _data_end = .
+                0x00000468                        _data_load = LOADADDR (.data)
+
+.igot.plt       0x20000000        0x0 load address 0x00000468
+ .igot.plt      0x20000000        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+
+.bss            0x20000000        0x0 load address 0x00000468
+                0x20000000                        _bss_start = .
+ *(.bss*)
+ *(COMMON)
+                0x20000000                        . = ALIGN (0x4)
+                0x20000000                        _bss_end = .
+OUTPUT(build/servo_sg90.elf elf32-littlearm)
+LOAD linker stubs
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+
+.ARM.attributes
+                0x00000000       0x2f
+ .ARM.attributes
+                0x00000000       0x21 C:\Users\Renbc\AppData\Local\Temp\ccIDGHzC.o
+ .ARM.attributes
+                0x00000021       0x2e C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+
+.comment        0x00000000       0x45
+ .comment       0x00000000       0x45 C:\Users\Renbc\AppData\Local\Temp\cc2VInx1.o
+                                 0x46 (size before relaxing)
