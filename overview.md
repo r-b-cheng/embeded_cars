@@ -10,6 +10,10 @@
 
 ## 三个目录
 
+### 舵机独立实机入口（2026-11-17）
+
+[`servo_sg90/`](servo_sg90/README.md) 已补充 PC7 位置保持固件、Linux CCS 烧录/控制脚本及[详细接线说明](servo_sg90/WIRING.md)。两轮试摆范围最终采用 1100–1900µs，结束回到 1500µs 并保持；已由现场观察确认效果。该独立测试不表示 `library/ports/tm4c123g/` 的整套移植已完成。
+
 | 目录 | 内容 |
 |---|---|
 | `organized/library/` | 跨平台 C99 外设通信函数库 v1.0.0。10 对 `.h/.c`、`ports/`（mock + TM4C/STM32 移植骨架）、`tests/`、`Makefile`、`README.md`、`代码审查报告.md` |

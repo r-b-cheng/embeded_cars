@@ -1,0 +1,10 @@
+{
+  "image_sha256": "5df8790fa8cada0eab49c879a0e4d83635c2c1d0dc62a0d814f256b7df7cb965",
+  "symbols": {
+    "control_applied_us": 536870912,
+    "control_target_us": 536870916,
+    "control_millis": 536870920,
+    "control_active": 536870924,
+    "control_enable": 536870928
+  }
+}

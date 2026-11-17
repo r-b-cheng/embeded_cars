@@ -1,0 +1,4 @@
+local/
+build/*.elf
+build/*.map
+__pycache__/
