@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include "inc/hw_memmap.h"
 #include "inc/hw_ints.h"
-#include "inc/tm4c123gh6pm.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
@@ -87,6 +86,15 @@ static void board_gpio_write(uint8_t pin, int level)
 static void board_motor_set_duty(uint8_t ch, uint8_t duty)
 {
     if (ch >= 4u) { return; }
+    static const uint8_t pins[] = {GPIO_PIN_6, GPIO_PIN_7, GPIO_PIN_4, GPIO_PIN_5};
+    uint8_t pin = pins[ch];
+    /* A compare at LOAD or beyond it cannot reliably generate DC levels. */
+    if (duty == 0u || duty == 100u) {
+        GPIOPinWrite(GPIO_PORTB_BASE, pin, duty ? pin : 0);
+        GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, pin);
+        return;
+    }
+    GPIOPinTypePWM(GPIO_PORTB_BASE, pin);
     PWMPulseWidthSet(PWM0_BASE, s_pwm_out[ch],
                      (uint32_t)duty * MOTOR_PERIOD / 100u);
 }
@@ -178,8 +186,7 @@ void Board_Init(void)
     GPIOPinConfigure(GPIO_PB7_M0PWM1);
     GPIOPinConfigure(GPIO_PB4_M0PWM2);
     GPIOPinConfigure(GPIO_PB5_M0PWM3);
-    GPIOPinTypePWM(GPIO_PORTB_BASE,
-                   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7);
+    /* Keep pins at their reset level until initialized below. */
     PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
                     PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
     PWMGenConfigure(PWM0_BASE, PWM_GEN_1,
@@ -187,7 +194,7 @@ void Board_Init(void)
     PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, MOTOR_PERIOD);
     PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, MOTOR_PERIOD);
     for (i = 0u; i < 4u; ++i) {
-        PWMPulseWidthSet(PWM0_BASE, s_pwm_out[i], 0u);   /* 上电全 0%，轮子不动 */
+        board_motor_set_duty(i, 0u);   /* 上电全 0%，轮子不动 */
     }
     PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT | PWM_OUT_1_BIT |
                               PWM_OUT_2_BIT | PWM_OUT_3_BIT, true);

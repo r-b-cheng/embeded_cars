@@ -67,7 +67,7 @@ int clib_motor_set_raw(const uint8_t duty[CLIB_MOTOR_CHANNELS])
 int clib_motor_set(clib_act_t act, int16_t speed)
 {
     uint8_t duty[CLIB_MOTOR_CHANNELS];
-    if ((int)act < 0 || (int)act >= (int)CLIB_ACT_COUNT) {
+    if ((unsigned)act >= CLIB_ACT_COUNT) {
         return CLIB_ERR_PARAM;
     }
     clib_diff_map(act, speed, duty);

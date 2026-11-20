@@ -69,7 +69,7 @@ int clib_gpio_read(clib_pin_t pin)
     if (s_port == NULL) {
         return CLIB_ERR_NOT_INIT;
     }
-    if ((int)pin < 0 || (int)pin >= (int)CLIB_PIN_COUNT) {
+    if ((unsigned)pin >= CLIB_PIN_COUNT) {
         return CLIB_ERR_PARAM;
     }
     return normalize_io(s_port->gpio_read((uint8_t)pin));
@@ -77,7 +77,7 @@ int clib_gpio_read(clib_pin_t pin)
 
 void clib_gpio_write(clib_pin_t pin, int level)
 {
-    if (s_port == NULL || (int)pin < 0 || (int)pin >= (int)CLIB_PIN_COUNT) {
+    if (s_port == NULL || (unsigned)pin >= CLIB_PIN_COUNT) {
         return;
     }
     s_port->gpio_write((uint8_t)pin, level);
