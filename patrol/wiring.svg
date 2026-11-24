@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1440" viewBox="0 0 1360 1440" role="img" aria-labelledby="title desc">
+<title id="title">巡逻车接线核对图</title><desc id="desc">TM4C123G LaunchPad 与 HC-SR04、SG90、ESP-01S、L298N 和左右电机的逐针接线，含共地、Echo 分压和供电顺序。</desc>
+<rect x="0" y="0" width="1360" height="1440" rx="0" fill="#f0f4f2" stroke="none"/>
+<rect x="0" y="0" width="1360" height="140" rx="0" fill="#122d39" stroke="none"/>
+<rect x="42" y="25" width="6" height="89" rx="3" fill="#72d6bf" stroke="none"/>
+<text x="66" y="75" fill="#ffffff" font-size="49" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">巡逻车接线核对图</text>
+<text x="68" y="111" fill="#c3d9da" font-size="23" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="450" text-anchor="start">EK-TM4C123GXL  /  巡逻固件 patrol.bin</text>
+<text x="1308" y="62" fill="#ffffff" font-size="26" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="end">按针脚丝印接线</text>
+<text x="1308" y="100" fill="#c3d9da" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="end">J2.10 表示 J2 排针第 10 脚</text>
+<rect x="42" y="158" width="1276" height="113" rx="12" fill="#e1efeb" stroke="#c6dcd4"/>
+<text x="66" y="196" fill="#136e65" font-size="25" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">供电与共地</text>
+<text x="234" y="196" fill="#122d39" font-size="23" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="start">DEBUG USB → 开发板</text>
+<text x="582" y="196" fill="#122d39" font-size="23" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="start">电池 → 降压模块 → 外设</text>
+<text x="66" y="237" fill="#122d39" font-size="21" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">电源 GND 与开发板 J2.01、四个模块的 GND 相连。电机回流直接回供电模块，外部正极只接外设。</text>
+<rect x="42" y="291" width="626" height="308" rx="14" fill="#ffffff" stroke="#d0e1df"/>
+<text x="66" y="340" fill="#122d39" font-size="33" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">HC-SR04  超声波</text>
+<rect x="585" y="314" width="62" height="28" rx="4" fill="#edf6f5" stroke="#136e65"/>
+<circle cx="599" cy="328" r="10" fill="white" stroke="#136e65" stroke-width="2"/>
+<circle cx="599" cy="328" r="6" fill="none" stroke="#136e65" stroke-width="1.5"/>
+<circle cx="632" cy="328" r="10" fill="white" stroke="#136e65" stroke-width="2"/>
+<circle cx="632" cy="328" r="6" fill="none" stroke="#136e65" stroke-width="1.5"/>
+<text x="66" y="375" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">开发板 / 外部电源</text>
+<text x="437" y="375" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">HC-SR04</text>
+<line x1="66" y1="387" x2="642" y2="387" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<text x="66" y="422" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PA2  ·  J2.10</text>
+<line x1="305" y1="415" x2="415" y2="415" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="415" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 407 410 L 415 415 L 407 420" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="422" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">Trig</text>
+<text x="66" y="462" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PB2  ·  J2.02</text>
+<line x1="305" y1="455" x2="415" y2="455" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="415" cy="455" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 313 450 L 305 455 L 313 460" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="462" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">Echo</text>
+<text x="66" y="502" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">固定 5 V</text>
+<line x1="305" y1="495" x2="415" y2="495" stroke="#ae491f" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="495" r="3.7" fill="white" stroke="#ae491f" stroke-width="2"/>
+<path d="M 407 490 L 415 495 L 407 500" fill="none" stroke="#ae491f" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="502" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">VCC</text>
+<text x="66" y="542" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">共地 GND</text>
+<line x1="305" y1="535" x2="415" y2="535" stroke="#50616b" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="535" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<circle cx="415" cy="535" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<text x="437" y="542" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">GND</text>
+<text x="66" y="578" fill="#45626c" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">图示为 Echo 直连。独立开关电源时用下方分压接法。</text>
+<rect x="692" y="291" width="626" height="308" rx="14" fill="#ffffff" stroke="#d0e1df"/>
+<text x="716" y="340" fill="#122d39" font-size="33" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">SG90  舵机</text>
+<rect x="1241" y="323" width="46" height="22" rx="3" fill="#edf6f5" stroke="#136e65"/>
+<path d="M1255 323v-7h12v7 M1238 315l50 -5" fill="none" stroke="#136e65" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="1261" cy="314" r="4" fill="white" stroke="#136e65" stroke-width="2"/>
+<text x="716" y="375" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">开发板 / 外部电源</text>
+<text x="1087" y="375" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">SG90 导线</text>
+<line x1="716" y1="387" x2="1292" y2="387" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<text x="716" y="422" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PC7  ·  J4.07</text>
+<line x1="955" y1="415" x2="1065" y2="415" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="415" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 1057 410 L 1065 415 L 1057 420" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="422" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">信号线（橙 / 黄）</text>
+<text x="716" y="462" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">固定 5 V</text>
+<line x1="955" y1="455" x2="1065" y2="455" stroke="#ae491f" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="455" r="3.7" fill="white" stroke="#ae491f" stroke-width="2"/>
+<path d="M 1057 450 L 1065 455 L 1057 460" fill="none" stroke="#ae491f" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="462" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">电源线（红）</text>
+<text x="716" y="502" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">共地 GND</text>
+<line x1="955" y1="495" x2="1065" y2="495" stroke="#50616b" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="495" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<circle cx="1065" cy="495" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<text x="1087" y="502" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">地线（棕 / 黑）</text>
+<text x="716" y="553" fill="#45626c" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">控制信号 50 Hz，1500 µs 为信号中位。</text>
+<text x="716" y="578" fill="#45626c" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">舵机电源取自外部固定 5 V 支路。</text>
+<rect x="42" y="619" width="626" height="383" rx="14" fill="#ffffff" stroke="#d0e1df"/>
+<text x="66" y="668" fill="#122d39" font-size="33" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">ESP-01S  Wi-Fi</text>
+<path d="M605 652.5 q10 -8.299999999999999 20 0" fill="none" stroke="#136e65" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M597 648.1 q18 -14.94 36 0" fill="none" stroke="#136e65" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M589 643.7 q26 -21.58 52 0" fill="none" stroke="#136e65" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="615" cy="662" r="3" fill="#136e65" stroke="none" stroke-width="1"/>
+<text x="66" y="703" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">开发板 / 外部电源</text>
+<text x="437" y="703" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">ESP-01S 模块</text>
+<line x1="66" y1="715" x2="642" y2="715" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<text x="66" y="751" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PC4  ·  J4.04  RX</text>
+<line x1="305" y1="744" x2="415" y2="744" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="415" cy="744" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 313 739 L 305 744 L 313 749" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="751" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">TXD</text>
+<text x="66" y="791" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PC5  ·  J4.05  TX</text>
+<line x1="305" y1="784" x2="415" y2="784" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="784" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 407 779 L 415 784 L 407 789" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="791" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">RXD</text>
+<text x="66" y="831" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">稳压 3.3 V / ≥500 mA</text>
+<line x1="305" y1="824" x2="415" y2="824" stroke="#79519a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="824" r="3.7" fill="white" stroke="#79519a" stroke-width="2"/>
+<path d="M 407 819 L 415 824 L 407 829" fill="none" stroke="#79519a" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="437" y="831" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">VCC</text>
+<text x="66" y="871" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">共地 GND</text>
+<line x1="305" y1="864" x2="415" y2="864" stroke="#50616b" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="305" cy="864" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<circle cx="415" cy="864" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<text x="437" y="871" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">GND</text>
+<line x1="66" y1="890" x2="642" y2="890" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<text x="66" y="924" fill="#45626c" font-size="20" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">AT 固件，UART1，115200 8N1。</text>
+<text x="66" y="952" fill="#45626c" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">EN / CH_PD、RST、GPIO0、GPIO2 启动时保持高电平。</text>
+<text x="66" y="980" fill="#45626c" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">核对板载上拉，缺少时各用约 10 kΩ 接本模块 3.3 V。</text>
+<rect x="692" y="619" width="626" height="596" rx="14" fill="#ffffff" stroke="#d0e1df"/>
+<text x="716" y="668" fill="#122d39" font-size="33" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">L298N  双轮驱动</text>
+<rect x="1246" y="640" width="42" height="37" rx="3" fill="#edf6f5" stroke="#136e65"/>
+<line x1="1253" y1="647" x2="1253" y2="670" stroke="#136e65" stroke-width="2" stroke-linecap="round"/>
+<line x1="1262" y1="647" x2="1262" y2="670" stroke="#136e65" stroke-width="2" stroke-linecap="round"/>
+<line x1="1271" y1="647" x2="1271" y2="670" stroke="#136e65" stroke-width="2" stroke-linecap="round"/>
+<line x1="1280" y1="647" x2="1280" y2="670" stroke="#136e65" stroke-width="2" stroke-linecap="round"/>
+<text x="716" y="703" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">开发板 / 外部电源 / 电机</text>
+<text x="1087" y="703" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">L298N 端子</text>
+<line x1="716" y1="715" x2="1292" y2="715" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<text x="716" y="751" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PB6  ·  J2.07</text>
+<line x1="955" y1="744" x2="1065" y2="744" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="744" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 1057 739 L 1065 744 L 1057 749" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="751" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">IN1  左轮正向</text>
+<text x="716" y="790" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PB7  ·  J2.06</text>
+<line x1="955" y1="783" x2="1065" y2="783" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="783" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 1057 778 L 1065 783 L 1057 788" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="790" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">IN2  左轮反向</text>
+<text x="716" y="829" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PB4  ·  J1.07</text>
+<line x1="955" y1="822" x2="1065" y2="822" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="822" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 1057 817 L 1065 822 L 1057 827" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="829" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">IN3  右轮正向</text>
+<text x="716" y="868" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">PB5  ·  J1.02</text>
+<line x1="955" y1="861" x2="1065" y2="861" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="861" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 1057 856 L 1065 861 L 1057 866" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="868" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">IN4  右轮反向</text>
+<text x="716" y="917" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">电机支路  ·  稳压 5 V</text>
+<line x1="955" y1="910" x2="1065" y2="910" stroke="#ae491f" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="910" r="3.7" fill="white" stroke="#ae491f" stroke-width="2"/>
+<path d="M 1057 905 L 1065 910 L 1057 915" fill="none" stroke="#ae491f" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="917" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">VS / VMS / +12V</text>
+<text x="716" y="956" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">逻辑支路  ·  固定 5 V</text>
+<line x1="955" y1="949" x2="1065" y2="949" stroke="#ae491f" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="949" r="3.7" fill="white" stroke="#ae491f" stroke-width="2"/>
+<path d="M 1057 944 L 1065 949 L 1057 954" fill="none" stroke="#ae491f" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="956" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">+5V（逻辑输入）</text>
+<text x="716" y="995" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">共地 GND</text>
+<line x1="955" y1="988" x2="1065" y2="988" stroke="#50616b" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="955" cy="988" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<circle cx="1065" cy="988" r="3.8" fill="white" stroke="#50616b" stroke-width="2"/>
+<text x="1087" y="995" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">GND</text>
+<text x="716" y="1049" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">左轮两根电机线</text>
+<line x1="955" y1="1042" x2="1065" y2="1042" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="1065" cy="1042" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 963 1037 L 955 1042 L 963 1047" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="1049" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">OUT1、OUT2</text>
+<text x="716" y="1088" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">右轮两根电机线</text>
+<line x1="955" y1="1081" x2="1065" y2="1081" stroke="#156c88" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="1065" cy="1081" r="3.7" fill="white" stroke="#156c88" stroke-width="2"/>
+<path d="M 963 1076 L 955 1081 L 963 1086" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1087" y="1088" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">OUT3、OUT4</text>
+<line x1="716" y1="884" x2="1292" y2="884" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<line x1="716" y1="1014" x2="1292" y2="1014" stroke="#d0e1df" stroke-width="2" stroke-linecap="round"/>
+<rect x="711" y="1109" width="588" height="87" rx="8" fill="#f9f1e6" stroke="none"/>
+<text x="724" y="1141" fill="#83431c" font-size="21" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="650" text-anchor="start">拔 5V_EN 稳压跳帽，保留 ENA、ENB 跳帽。</text>
+<text x="724" y="1175" fill="#71482f" font-size="18" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">本车电机额定 3–6 V。VS 即使标作 +12V，也接稳压 5 V。</text>
+<rect x="42" y="1021" width="626" height="194" rx="14" fill="#fff" stroke="#d0e1df"/>
+<text x="66" y="1062" fill="#122d39" font-size="26" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">Echo 可选电阻分压</text>
+<text x="66" y="1092" fill="#45626c" font-size="18" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">仅用于回波线。两只电阻交点接 PB2。</text>
+<text x="66" y="1137" fill="#122d39" font-size="20" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="start">Echo</text>
+<line x1="129" y1="1130" x2="164" y2="1130" stroke="#156c88" stroke-width="2" stroke-linecap="round"/>
+<rect x="164" y="1117" width="93" height="26" rx="2" fill="#edf5f7" stroke="#156c88"/>
+<text x="210" y="1136" fill="#122d39" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="middle">2.2 kΩ</text>
+<line x1="257" y1="1130" x2="307" y2="1130" stroke="#156c88" stroke-width="2" stroke-linecap="round"/>
+<circle cx="307" cy="1130" r="4.5" fill="#156c88" stroke="none" stroke-width="1"/>
+<line x1="307" y1="1130" x2="411" y2="1130" stroke="#156c88" stroke-width="2" stroke-linecap="round"/>
+<path d="M 403 1125 L 411 1130 L 403 1135" fill="none" stroke="#156c88" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="428" y="1137" fill="#122d39" font-size="20" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="start">PB2  ·  J2.02</text>
+<line x1="307" y1="1130" x2="307" y2="1169" stroke="#156c88" stroke-width="2" stroke-linecap="round"/>
+<line x1="307" y1="1169" x2="338" y2="1169" stroke="#50616b" stroke-width="2" stroke-linecap="round"/>
+<rect x="338" y="1156" width="93" height="26" rx="2" fill="#f1f4f3" stroke="#50616b"/>
+<text x="384" y="1175" fill="#122d39" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="middle">3.3 kΩ</text>
+<line x1="431" y1="1169" x2="458" y2="1169" stroke="#50616b" stroke-width="2" stroke-linecap="round"/>
+<text x="468" y="1176" fill="#50616b" font-size="19" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="600" text-anchor="start">GND</text>
+<text x="66" y="1200" fill="#45626c" font-size="17" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="400" text-anchor="start">Echo 为 5 V 时，PB2 约 3.0 V。</text>
+<rect x="42" y="1235" width="1276" height="103" rx="12" fill="#e3efed" stroke="#c5d9d3"/>
+<text x="66" y="1274" fill="#136e65" font-size="25" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">Echo 直连时</text>
+<text x="266" y="1274" fill="#136e65" font-size="21" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">开机</text>
+<text x="336" y="1274" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">先插 DEBUG USB，再开传感器 5 V。</text>
+<text x="266" y="1312" fill="#136e65" font-size="21" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">关机</text>
+<text x="336" y="1312" fill="#122d39" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">先关传感器 5 V，再拔 DEBUG USB。</text>
+<rect x="42" y="1355" width="1276" height="65" rx="10" fill="#fff1df" stroke="#e7cb9e"/>
+<text x="62" y="1396" fill="#81451d" font-size="22" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="700" text-anchor="start">实测提醒</text>
+<text x="181" y="1396" fill="#663b1c" font-size="21" font-family="Noto Sans CJK SC, Noto Sans CJK JP, sans-serif" font-weight="500" text-anchor="start">2026-11-24 发现停车后驱动线仍为高电平。修复并架空复测前，保持电机支路断电。</text>
+</svg>

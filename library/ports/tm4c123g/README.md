@@ -159,7 +159,7 @@ const clib_port_t g_tm4c123g_port = {
 |---|---|
 | **PWM 时钟分频** | 复位后 PWM 时钟分频不是 /1。漏了 `SysCtlPWMClockSet(SYSCTL_PWMDIV_1)`，按 `SysCtlClockGet()` 算 period 会得到电机 10kHz、舵机 25Hz。 |
 | **16 位捕获溢出** | 见骨架步骤 8。HC-SR04 回波最长约 30ms，16 位计数器在 80MHz 下 819us 就回绕。 |
-| **5V 电平** | TI SPMA053：TM4C123x GPIO 在**输入配置**下多数 5V tolerant 但**不是 5V compliant**，PB0/PB1 例外，配置为外设/ADC 时不保证；输出高只有 3.3V。HC-SR04 Echo、5V 红外输出**一律加分压/电平转换**；输出到 L298N IN 要核对其 `V_IH`。 |
+| **5V 电平** | 按具体芯片、引脚和输入模式核对 5 V 容限。TM4C123GH6PM 的 PB2 用作数字输入时，HC-SR04 Echo 可按整车指南分压或直连。5 V 红外输出仍按分压或电平转换接入。GPIO 输出高电平为 3.3 V，驱动 L298N IN 要核对其 `V_IH`。[Echo 接线与供电顺序](../../../patrol/WIRING.md#hc-sr04-echo-接线与供电顺序) |
 | **PWM 共时基** | 同一个 PWM 发生器的两路输出共用一个计数器，频率必须相同。4 路电机 20kHz 用 Gen0/Gen1，舵机 50Hz 单独占 Gen2。 |
 | **GPIO 解锁是两类事** | PD7 / PF0 是 **NMI 锁定脚**，作 GPIO 须 `HWREG(port_base + GPIO_O_LOCK) = GPIO_LOCK_KEY;` 再 `HWREG(port_base + GPIO_O_CR) |= pin;`，用完建议重新上锁；PC0~3 是 **JTAG 复用脚**，不是 NMI 锁定，别混为一谈（改错会把调试口锁死）。PF0/PF4 又是板载按键、PF1~3 是 RGB LED，**尽量整组避开**。 |
 | **UART0 被占用** | PA0/PA1 硬连板载 ICDI 虚拟串口，正好当调试口，别再分给蓝牙/K210。 |
