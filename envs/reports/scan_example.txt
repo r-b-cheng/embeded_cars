@@ -1,0 +1,7 @@
+-60 {'distance_m': 0.541196100146197, 'status': 'hit', 'bearing_rad': -1.0471975511965976, 'echo_time_s': 0.0031556623915230146}
+-40 {'distance_m': 0.6781708524546285, 'status': 'hit', 'bearing_rad': -0.6981317007977318, 'echo_time_s': 0.003954348993904539}
+-20 {'distance_m': 1.0828402851001002, 'status': 'hit', 'bearing_rad': -0.3490658503988659, 'echo_time_s': 0.006313937522449564}
+0 {'distance_m': 2.3194827009486403, 'status': 'hit', 'bearing_rad': 0.0, 'echo_time_s': 0.013524680472003734}
+20 {'distance_m': 1.3006329595545236, 'status': 'hit', 'bearing_rad': 0.3490658503988659, 'echo_time_s': 0.007583865653379146}
+40 {'distance_m': 0.7071067811865476, 'status': 'hit', 'bearing_rad': 0.6981317007977318, 'echo_time_s': 0.004123071610417187}
+60 {'distance_m': 0.7913453184482153, 'status': 'hit', 'bearing_rad': 1.0471975511965976, 'echo_time_s': 0.00461425841660767}

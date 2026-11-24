@@ -1,0 +1,1537 @@
+{
+  "episodes": 100,
+  "motion_commands": 2000,
+  "physics_ticks": 100000,
+  "range_comparisons": 130000,
+  "valid_range_checks": 121058,
+  "no_echo_checks": 8878,
+  "blind_zone_checks": 64,
+  "imu_frames_checked": 100000,
+  "encoder_frames_checked": 50000,
+  "bumper_frames_checked": 100000,
+  "max_range_error_m": 2.9682922786378185e-12,
+  "max_pose_error_m": 4.61938172120776e-14,
+  "max_yaw_error_rad": 5.706546346573305e-14,
+  "max_gyro_error_rad_s": 5.551115123125783e-17,
+  "max_accel_error_m_s2": 8.881784197001252e-16,
+  "maps": 10,
+  "spawns_per_map": 10,
+  "motions_per_episode": 20,
+  "motion_duration_s": 0.5,
+  "simulated_seconds": 1000.0,
+  "status": "passed",
+  "duration_s": 101.02,
+  "tolerances": {
+    "range_m": 1e-09,
+    "position_m": 1e-09,
+    "yaw_rad": 1e-09,
+    "imu_accel_m_s2": 1e-09
+  },
+  "python": "3.13.5",
+  "numpy": "2.3.5",
+  "shapely": "2.1.2",
+  "oracle": "Independent GEOS geometry + complex-plane kinematics; no shared raycast/integrator",
+  "scope": "Ideal deterministic planar sensor model; not a real HC-SR04 acoustic validation",
+  "episodes_detail": [
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 0,
+      "initial_pose": [
+        1.8247538608957972,
+        3.520356628395897,
+        -0.16038881668711946
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 1,
+      "initial_pose": [
+        2.9119921240068325,
+        2.9890677689983614,
+        2.727538003878835
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 2,
+      "initial_pose": [
+        1.1637962922096148,
+        3.0061308653238723,
+        0.4688282916461066
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 3,
+      "initial_pose": [
+        0.7725217897514234,
+        2.8682061251972066,
+        -1.96098514306842
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 4,
+      "initial_pose": [
+        3.087469717970808,
+        0.796538724133027,
+        0.9916236707201271
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 5,
+      "initial_pose": [
+        2.7261582951585357,
+        1.4689776463593867,
+        -0.48051494866408184
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 6,
+      "initial_pose": [
+        3.5824789189209065,
+        1.0017391688313178,
+        1.8558926065760062
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 7,
+      "initial_pose": [
+        3.1911874163494613,
+        2.3546175074693187,
+        0.5863309983427887
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 8,
+      "initial_pose": [
+        3.5237260711654175,
+        2.7841404378451227,
+        2.585117106497708
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "01_empty_room.json",
+      "map_sha256": "aa178e8268cf1fe37af3a87f84d30165dee144402383153ba55d4535cc96839c",
+      "spawn": 9,
+      "initial_pose": [
+        1.939616520416002,
+        3.295602193357744,
+        0.518171197894127
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 0,
+      "initial_pose": [
+        2.513884389735951,
+        3.5315434063054028,
+        0.5855042432250213
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 1,
+      "initial_pose": [
+        2.2342863826516517,
+        2.834816159226352,
+        0.8022644230825771
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 2,
+      "initial_pose": [
+        2.4819277202393497,
+        0.5904579177736773,
+        2.6944429263641236
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 3,
+      "initial_pose": [
+        1.5776317240072055,
+        3.443094877533508,
+        -0.1786010732040233
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 4,
+      "initial_pose": [
+        1.1643339368103292,
+        2.7100809703368016,
+        -0.2416052771325652
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 5,
+      "initial_pose": [
+        1.1470832935036381,
+        2.413204786287324,
+        -2.28756673792256
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 6,
+      "initial_pose": [
+        2.997683033639913,
+        3.1366528315215945,
+        -2.1148501578577465
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 7,
+      "initial_pose": [
+        1.0410242070680058,
+        3.492405549883231,
+        -1.3403912446346886
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 8,
+      "initial_pose": [
+        3.0238357181174904,
+        2.5383251168765555,
+        -1.1666408046941077
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "02_central_box.json",
+      "map_sha256": "ce22dae570c0f6b0fa8ccd5b495de8f6ed4848e392936bf6a1830c628eb7f4e1",
+      "spawn": 9,
+      "initial_pose": [
+        2.641492091174645,
+        0.3820081220635887,
+        -1.064082504971894
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 0,
+      "initial_pose": [
+        2.9328128167251677,
+        0.3074131883308813,
+        -1.4625877180027511
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 4,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 1,
+      "initial_pose": [
+        0.3671728950874863,
+        1.069496073045641,
+        -0.648398540547884
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 2,
+      "initial_pose": [
+        2.047715869136599,
+        0.4831608678316025,
+        0.2445325851284288
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 3,
+      "initial_pose": [
+        0.36354981008234644,
+        1.842432430478671,
+        3.0506829240050157
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 4,
+      "initial_pose": [
+        1.4512432605933183,
+        1.991629200966415,
+        -0.36760530266322755
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 5,
+      "initial_pose": [
+        0.47245994289601956,
+        1.5729557984227067,
+        -0.6954942209675048
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 6,
+      "initial_pose": [
+        0.8769822453060794,
+        1.057234641641199,
+        -2.840936795000237
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 7,
+      "initial_pose": [
+        1.3236354546535585,
+        2.753344094752537,
+        -1.025657118376055
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 8,
+      "initial_pose": [
+        1.4876796968857189,
+        1.2647710455883734,
+        -2.7292164461366726
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "03_l_corridor.json",
+      "map_sha256": "29c9b04d5960e6c17c6f291f263cfd87224f4b3ed4562a3611342433b5f6c670",
+      "spawn": 9,
+      "initial_pose": [
+        3.4384082192295513,
+        0.7013695032704468,
+        1.4112485914888548
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 0,
+      "initial_pose": [
+        2.0680455523012964,
+        2.847590130990601,
+        -0.9461742147883307
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 1,
+      "initial_pose": [
+        2.4395054682504664,
+        0.7522923800814326,
+        -2.1724047509579627
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 2,
+      "initial_pose": [
+        0.3653472861831813,
+        2.721307001224608,
+        0.8463652878006127
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 3,
+      "initial_pose": [
+        1.2787962704597062,
+        2.8571068861516573,
+        -0.8383516500368402
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 4,
+      "initial_pose": [
+        2.5665489552532144,
+        2.1701134598291794,
+        -0.9187869291972626
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 5,
+      "initial_pose": [
+        4.5290035811599365,
+        2.6720505054820083,
+        -1.8873833857746294
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 6,
+      "initial_pose": [
+        2.249212529544608,
+        1.3852351718571183,
+        2.5360470117139675
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 3,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 7,
+      "initial_pose": [
+        2.5782772058296763,
+        1.0163299149059881,
+        -1.649852656702151
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 8,
+      "initial_pose": [
+        4.166319490561798,
+        2.713415953487109,
+        0.45764800851335696
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "04_t_junction.json",
+      "map_sha256": "538e79c7c9aac59e66f98f6e1137d37e96e9c5dc9ce1600969988f160225ecb9",
+      "spawn": 9,
+      "initial_pose": [
+        1.60644970428971,
+        2.537918521621016,
+        -0.9103080221205246
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 0,
+      "initial_pose": [
+        2.6080002905630613,
+        2.984777237827384,
+        -1.8452821272949107
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 1,
+      "initial_pose": [
+        2.9468101283902857,
+        3.376732281634743,
+        -2.143995711985373
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 2,
+      "initial_pose": [
+        2.5827233683796194,
+        3.341686938225656,
+        1.8698047299293723
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 3,
+      "initial_pose": [
+        3.218306991543089,
+        3.3235194919395314,
+        -0.4312676333041483
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 4,
+      "initial_pose": [
+        3.007990773023988,
+        0.4995486051800889,
+        0.799521172346541
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 5,
+      "initial_pose": [
+        2.82519343828788,
+        1.4760166382672277,
+        2.238221867866767
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 3,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 6,
+      "initial_pose": [
+        0.7983064967348339,
+        0.5647156128122175,
+        -2.358621033831159
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 7,
+      "initial_pose": [
+        4.2080570902046,
+        2.005854550047234,
+        -1.4098465559630742
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 8,
+      "initial_pose": [
+        3.5989780565954073,
+        1.313053828626105,
+        0.19793664748399742
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "05_slanted_walls.json",
+      "map_sha256": "ca2e257f11883e99862ef27da961c8014dc92d0fb2406f7eea868f348950f8c6",
+      "spawn": 9,
+      "initial_pose": [
+        4.482745236289557,
+        2.034226512777677,
+        -0.2526302664182247
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 0,
+      "initial_pose": [
+        3.1525333546317054,
+        0.6298795581128755,
+        -0.3396583557322552
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 1,
+      "initial_pose": [
+        3.9310347071688323,
+        1.6608892478241977,
+        2.654418407573991
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 2,
+      "initial_pose": [
+        0.804381543009361,
+        0.7094372710109283,
+        3.031154460366153
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 3,
+      "initial_pose": [
+        0.3124861396839706,
+        1.199984725982415,
+        -0.6352815972786829
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 4,
+      "initial_pose": [
+        0.4389187326876023,
+        3.3201728748492156,
+        2.812227820592927
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 5,
+      "initial_pose": [
+        3.6173739492156276,
+        0.4442196681421879,
+        -0.6017022453569436
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 6,
+      "initial_pose": [
+        1.6666633644783455,
+        1.3830199618878438,
+        -3.1321208793421884
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 7,
+      "initial_pose": [
+        1.4719754224172672,
+        0.5536122650473443,
+        -0.15861214756648234
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 8,
+      "initial_pose": [
+        3.8643021277415963,
+        3.674486113092506,
+        1.136960350101461
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 3,
+      "status": "passed"
+    },
+    {
+      "map": "06_doorway.json",
+      "map_sha256": "6e62db7cc65fcadf4dcbfb4dd66a9073b4953158cbc1080c454ea5a1765b1a2c",
+      "spawn": 9,
+      "initial_pose": [
+        4.0623227197770735,
+        2.3725206164442563,
+        2.443900702336025
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 0,
+      "initial_pose": [
+        3.2962168360040187,
+        0.6133551184507536,
+        2.582945530944718
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 1,
+      "initial_pose": [
+        2.0446207383641655,
+        2.7718371604780527,
+        -2.710221009596042
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 2,
+      "initial_pose": [
+        3.9854053600180377,
+        1.2298005946366488,
+        -1.1460757924429568
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 3,
+      "initial_pose": [
+        2.274422802784608,
+        1.5517245480736792,
+        -0.22567628261638184
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 4,
+      "initial_pose": [
+        2.4778064587025668,
+        3.8281180844827976,
+        -2.0524418383965672
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 5,
+      "initial_pose": [
+        3.8335770458474334,
+        3.6247702502480452,
+        1.0796421474422528
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 6,
+      "initial_pose": [
+        3.5168813897840865,
+        1.1652249773662309,
+        -2.491145585720627
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 7,
+      "initial_pose": [
+        0.8745055931401706,
+        2.3906177343400588,
+        0.2781065223910608
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 8,
+      "initial_pose": [
+        2.4274383355340716,
+        2.964237351658685,
+        0.16824947859129935
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "07_zigzag_maze.json",
+      "map_sha256": "7a9805db2a9a5a321fae58d805b6b56695e1e44ed7d63fcbc2c38910e36419d9",
+      "spawn": 9,
+      "initial_pose": [
+        5.190116990158094,
+        3.270661359858198,
+        -0.26964834396509074
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 0,
+      "initial_pose": [
+        1.191781564192707,
+        3.210900474388584,
+        2.3008635611614476
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 1,
+      "initial_pose": [
+        1.1025556807724932,
+        4.393003987976166,
+        -2.725635465532992
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 2,
+      "initial_pose": [
+        2.370164935760066,
+        4.06894947057214,
+        0.5170782634825559
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 3,
+      "initial_pose": [
+        0.34050854539292286,
+        0.6262297479175891,
+        1.864782418873852
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 4,
+      "initial_pose": [
+        1.4708583995960391,
+        4.630198915717967,
+        1.079170021669456
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 4,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 5,
+      "initial_pose": [
+        3.222452264863472,
+        1.745770204019793,
+        2.303669447729084
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 6,
+      "initial_pose": [
+        2.4736292984670305,
+        4.394012472377481,
+        2.6002038448760114
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 7,
+      "initial_pose": [
+        1.373988380109309,
+        0.3473402359135286,
+        0.4788256887920954
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 8,
+      "initial_pose": [
+        2.076814328351355,
+        2.914936332716855,
+        -2.9061206753885007
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "08_irregular.json",
+      "map_sha256": "4847151f72230f217663b197c6e9492ca6ad551c7cfef7d0213618d04f36770d",
+      "spawn": 9,
+      "initial_pose": [
+        3.812813426761149,
+        2.039717317432559,
+        2.9785980609627565
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 0,
+      "initial_pose": [
+        4.216078488754629,
+        2.6931618559913115,
+        -0.7229436809453964
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 1,
+      "initial_pose": [
+        4.25956099434707,
+        2.30821829310376,
+        -1.7473765448065604
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 2,
+      "initial_pose": [
+        3.5652308171697986,
+        2.685217576999987,
+        0.40825566114883527
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 3,
+      "initial_pose": [
+        2.7938486506733597,
+        2.7305938562801484,
+        0.7340691955430749
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 4,
+      "initial_pose": [
+        3.03431133629125,
+        1.066021161624806,
+        0.9004222114322662
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 5,
+      "initial_pose": [
+        4.466594808852087,
+        4.331859806764102,
+        2.704779846511985
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 6,
+      "initial_pose": [
+        1.4432604369976505,
+        0.5458243449548292,
+        0.6658167703537998
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 7,
+      "initial_pose": [
+        2.176534551887669,
+        3.407336766590043,
+        -2.913644950258574
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 8,
+      "initial_pose": [
+        1.9233982201274222,
+        3.8471114311992913,
+        -3.026177561068726
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "09_clutter.json",
+      "map_sha256": "4c1eb7274d204f0bf1b12c430ec6ca006f451f9d8d95a5723e1b741aac7e5bcb",
+      "spawn": 9,
+      "initial_pose": [
+        2.2085584560679687,
+        4.006222634190985,
+        2.3008816781613666
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 0,
+      "initial_pose": [
+        4.683144887561988,
+        2.119518722921373,
+        1.3642695433211545
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 1,
+      "initial_pose": [
+        3.305561275481159,
+        0.5596922804168671,
+        0.17446498322872994
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 2,
+      "initial_pose": [
+        3.989415180884113,
+        2.4678806859640083,
+        2.7648519999836028
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 3,
+      "initial_pose": [
+        4.6612627561764635,
+        2.470701628559877,
+        2.657154282126452
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 4,
+      "initial_pose": [
+        0.6095219845474353,
+        2.5138407693650047,
+        2.717899450024638
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 1,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 5,
+      "initial_pose": [
+        2.1719929937383906,
+        0.7681629196931086,
+        2.667756287799051
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 2,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 6,
+      "initial_pose": [
+        1.0156198737578996,
+        2.7540846503647476,
+        1.6920390554642921
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 7,
+      "initial_pose": [
+        0.578449073522963,
+        0.47956742661139684,
+        1.1370423908923453
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 8,
+      "initial_pose": [
+        1.6752418587419473,
+        3.0861588664402593,
+        2.0083391601817144
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    },
+    {
+      "map": "10_occupancy_import.json",
+      "map_sha256": "51462c2cc187863778e7c4c1b52f9c271a052da896ab3e1aada171b3113c4a3b",
+      "spawn": 9,
+      "initial_pose": [
+        4.176341123610216,
+        3.5479642292799483,
+        0.6138083398347356
+      ],
+      "motions": 20,
+      "translation_segments": 16,
+      "travel_m": 0.9975000000000002,
+      "collision_avoidance_substitutions": 0,
+      "status": "passed"
+    }
+  ]
+}

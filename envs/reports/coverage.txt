@@ -1,0 +1,14 @@
+Name                       Stmts   Miss   Cover   Missing
+---------------------------------------------------------
+robot_sim/__init__.py          6      0 100.00%
+robot_sim/config.py           85      5  94.12%   66, 70, 76, 80, 101
+robot_sim/convert.py          51      6  88.24%   15, 24, 36, 40, 42, 66
+robot_sim/demo.py             81     17  79.01%   50, 65-80, 93
+robot_sim/environment.py     259     13  94.98%   50, 82, 84, 139, 152, 243, 245, 295, 305, 314, 317, 320, 325
+robot_sim/geometry.py         81      1  98.77%   91
+robot_sim/metrics.py          21      2  90.48%   19, 21
+robot_sim/render.py           55      7  87.27%   12-13, 18, 20, 40, 61-62
+robot_sim/sensors.py         104      1  99.04%   98
+robot_sim/world.py           146     14  90.41%   43, 47, 57, 67, 79, 82, 86, 88, 90, 93, 96, 102, 129, 164
+---------------------------------------------------------
+TOTAL                        889     66  92.58%

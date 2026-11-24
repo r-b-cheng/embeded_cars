@@ -1,0 +1,10 @@
+{
+  "physics_dt_s": 0.01,
+  "robot": {"motor_tau_s": 0.12, "left_gain": 0.97, "right_gain": 1.02, "left_slip": 0.02, "right_slip": 0.01},
+  "sensors": {
+    "ultrasonic": {"frequency_hz": 10, "beam_width_deg": 15, "noise_std_m": 0.01, "dropout_probability": 0.05, "latency_s": 0.03, "mount": [0.06, 0, 0]},
+    "imu": {"frequency_hz": 100, "gyro_noise_std_rad_s": 0.005, "gyro_bias_rad_s": 0.002, "gyro_bias_walk_rad_s_sqrt_s": 0.0005, "accel_noise_std_m_s2": 0.02},
+    "encoder": {"ticks_per_rev": 1440},
+    "bumper": {}
+  }
+}

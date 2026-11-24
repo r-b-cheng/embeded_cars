@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "units": "m",
+  "name": "08_irregular",
+  "bounds": [
+    0,
+    0,
+    5,
+    5
+  ],
+  "polygons": [
+    [
+      [
+        1,
+        1
+      ],
+      [
+        2.3,
+        1.2
+      ],
+      [
+        2.4,
+        1.7
+      ],
+      [
+        1.6,
+        1.8
+      ],
+      [
+        1.5,
+        2.8
+      ],
+      [
+        0.8,
+        2.4
+      ]
+    ],
+    [
+      [
+        3.2,
+        3
+      ],
+      [
+        4.2,
+        2.7
+      ],
+      [
+        4.6,
+        4
+      ],
+      [
+        3.5,
+        4.4
+      ]
+    ]
+  ],
+  "walls": [
+    [
+      [
+        2.8,
+        0.2
+      ],
+      [
+        3.5,
+        1.6
+      ]
+    ]
+  ],
+  "metadata": {
+    "purpose": "deterministic simulator acceptance",
+    "coordinates": "x right, y up; radians CCW"
+  }
+}

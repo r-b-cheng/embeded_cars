@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Embedded Cars 2D Map v1",
+  "type": "object",
+  "required": ["version", "bounds"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "units": {"const": "m"},
+    "name": {"type": "string"},
+    "bounds": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4},
+    "polygons": {"type": "array", "items": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/point"}}},
+    "walls": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/point"}}},
+    "metadata": {"type": "object"},
+    "occupancy": {
+      "type": "object", "required": ["resolution_m", "cells"], "additionalProperties": false,
+      "properties": {
+        "resolution_m": {"type": "number", "exclusiveMinimum": 0},
+        "origin_m": {"$ref": "#/$defs/point"},
+        "row_order": {"const": "bottom_to_top"},
+        "occupied_threshold": {"type": "number", "minimum": 1, "maximum": 100},
+        "unknown_policy": {"enum": ["reject", "occupied", "free"]},
+        "cells": {"type": "array", "minItems": 1, "items": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": -1, "maximum": 100}}}
+      }
+    }
+  },
+  "$defs": {"point": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}}
+}

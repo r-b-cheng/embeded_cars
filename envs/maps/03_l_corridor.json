@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "units": "m",
+  "name": "03_l_corridor",
+  "bounds": [
+    0,
+    0,
+    5,
+    5
+  ],
+  "polygons": [
+    [
+      [
+        2,
+        2
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        5
+      ],
+      [
+        2,
+        5
+      ]
+    ]
+  ],
+  "walls": [],
+  "metadata": {
+    "purpose": "deterministic simulator acceptance",
+    "coordinates": "x right, y up; radians CCW"
+  }
+}

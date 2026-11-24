@@ -1,0 +1,1 @@
+{'time_s': 3.0, 'pose': [0.9149999999999986, 0.7, 0.0], 'wheel_angles_rad': [9.692307692307661, 9.692307692307661], 'wheel_speeds_m_s': [0.105, 0.105], 'v_m_s': 0.105, 'omega_rad_s': 0.0, 'accel_forward_m_s2': 0.0, 'alpha_rad_s2': 0.0, 'collided': False, 'collision_count': 0}

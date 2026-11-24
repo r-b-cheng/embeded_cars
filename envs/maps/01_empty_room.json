@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "units": "m",
+  "name": "01_empty_room",
+  "bounds": [
+    0,
+    0,
+    4,
+    4
+  ],
+  "polygons": [],
+  "walls": [],
+  "metadata": {
+    "purpose": "deterministic simulator acceptance",
+    "coordinates": "x right, y up; radians CCW"
+  }
+}

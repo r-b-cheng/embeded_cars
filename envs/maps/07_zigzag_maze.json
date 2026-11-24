@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "units": "m",
+  "name": "07_zigzag_maze",
+  "bounds": [
+    0,
+    0,
+    6,
+    5
+  ],
+  "polygons": [
+    [
+      [
+        1.4,
+        0
+      ],
+      [
+        1.6,
+        0
+      ],
+      [
+        1.6,
+        3.6
+      ],
+      [
+        1.4,
+        3.6
+      ]
+    ],
+    [
+      [
+        2.9,
+        1.4
+      ],
+      [
+        3.1,
+        1.4
+      ],
+      [
+        3.1,
+        5
+      ],
+      [
+        2.9,
+        5
+      ]
+    ],
+    [
+      [
+        4.4,
+        0
+      ],
+      [
+        4.6,
+        0
+      ],
+      [
+        4.6,
+        3.6
+      ],
+      [
+        4.4,
+        3.6
+      ]
+    ]
+  ],
+  "walls": [],
+  "metadata": {
+    "purpose": "deterministic simulator acceptance",
+    "coordinates": "x right, y up; radians CCW"
+  }
+}

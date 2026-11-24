@@ -1,0 +1,11 @@
+{
+  "physics_dt_s": 0.01,
+  "robot": {"radius_m": 0.1, "wheel_base_m": 0.135, "wheel_radius_m": 0.0325},
+  "sensors": {
+    "ultrasonic": {"type": "ultrasonic", "frequency_hz": 10, "max_range_m": 4.0, "min_range_m": 0.02, "beam_width_deg": 15, "mount": [0.06, 0, 0]},
+    "imu": {"frequency_hz": 100},
+    "encoder": {"ticks_per_rev": 1440},
+    "lidar": {"enabled": false},
+    "bumper": {}
+  }
+}

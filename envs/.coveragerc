@@ -1,0 +1,5 @@
+[run]
+source = robot_sim
+[report]
+show_missing = True
+precision = 2

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embedded-cars-envs"
+version = "0.1.0"
+description = "Deterministic 2D differential-drive laboratory with configurable sensors"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+visual = ["matplotlib>=3.6", "Pillow>=9"]
+test = ["pytest>=7", "shapely>=1.8", "coverage>=7", "matplotlib>=3.6", "Pillow>=9"]
+
+[tool.setuptools.packages.find]
+include = ["robot_sim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["acceptance: 10 maps x 10 spawns x 20 motion commands"]

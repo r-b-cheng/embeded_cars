@@ -1,0 +1,12 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing /mnt/data/robot_delivery/envs
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: embedded-cars-envs
+  Building wheel for embedded-cars-envs (pyproject.toml): started
+  Building wheel for embedded-cars-envs (pyproject.toml): finished with status 'done'
+  Created wheel for embedded-cars-envs: filename=embedded_cars_envs-0.1.0-py3-none-any.whl size=21007 sha256=aa174b2f6ae279042901c4a7051579375ad789ce17e164846ba411b92dac6b62
+  Stored in directory: /tmp/pip-ephem-wheel-cache-5l2oh1ij/wheels/da/ae/1f/51c42e56cbcd0ab6cb7e10911fc68378f3152d754fdcc86d26
+Successfully built embedded-cars-envs
+Installing collected packages: embedded-cars-envs
+Successfully installed embedded-cars-envs-0.1.0
