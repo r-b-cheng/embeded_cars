@@ -1,225 +1,412 @@
-# 小车二维算法实验环境 · v0.1.0
+# Embedded Cars Gym — 二维小车仿真环境
 
-Python 差速小车仿真平台，面向 TM4C123G 小车的建图、定位与导航算法开发。
-**加载地图、放置小车、发送左右轮 PWM、读取传感器。算法通过 `RobotPort` 接口运行。**
+面向 TM4C123G 双轮差速小车的 **Python 算法实验环境（v0.1.0）**。在真实硬件接入前，可以加载地图、放置机器人、控制左右轮、扫描超声波，以及比较定位和建图算法。
 
-已经包含 10 张地图、可配置的 6 类传感器、固定时钟、碰撞检测、噪声、记录与确定性回放。
-核心依赖只有 NumPy；Matplotlib 用于可视化，Shapely 仅用于独立测试。
+> **接口约定**：本项目目前是一个自定义的仿真 Gym，**尚未实现 Gymnasium / OpenAI Gym 标准接口**（例如 \`observation, reward, terminated, truncated, info\` 的五元组）。实际 API 为 \`RobotEnvironment\` + \`RobotPort\`。不要直接把它传给需要 \`gymnasium.Env\` 的训练库。
 
-> 精度承诺的范围：验证的是已定义二维数学模型的数值正确性。超声波采用“扇区内最近反射物”模型，未模拟真实声场、材料、镜面反射和多径。不要把数值测试中的浮点误差当作 HC-SR04 的实物精度。
+## 0. 五分钟上手
 
-## 1. 安装与运行
+环境要求：**Python ≥ 3.10**。从整个仓库根目录运行：
 
-建议 Python 3.10+；本次实际测试版本见 [测试报告](reports/TEST_REPORT.md)。在仓库根目录执行：
+\`\`\`bash
+git clone https://github.com/r-b-cheng/embeded_cars.git
+cd embeded_cars/envs
 
-```bash
-cd envs
 python -m venv .venv
 # Linux / macOS
 source .venv/bin/activate
-# Windows PowerShell 使用：.venv\Scripts\Activate.ps1
+# Windows PowerShell: .venv\Scripts\Activate.ps1
 python -m pip install -e ".[visual,test]"
 
-# 无窗口演示：保存图片和可回放日志
-python -m robot_sim.demo --map maps/08_irregular.json --pose 0.5 0.5 0 \
-  --config configs/noisy.json --steps 350 --save preview.png --record run.jsonl
-
-# 桌面练习场；须在有图形显示和可用 Matplotlib GUI 后端的本机执行
+# 打开带键盘控制的二维练习场（需要桌面图形界面）
 python -m robot_sim.demo --map maps/01_empty_room.json --pose 1 1 0 --interactive
 
-# 逐值验证回放，保存最终画面
-python -m robot_sim.demo --replay run.jsonl --save replay.png
+# 没有图形界面：运行脚本并保存最终画面
+python -m robot_sim.demo --map maps/08_irregular.json --steps 300 --save output.png
 
-# 完整验收（包含 10×10×20 测试）
+# 检查环境
 python -m pytest -q
-```
+\`\`\`
 
-交互键：`W/S` 前后、`A/D` 原地转向，松开方向键停车；空格停车，`[` / `]` 调舵机，`P` 暂停，`Esc` 关闭。模拟时间由固定步长推进，界面卡顿不会扩大物理步长。
+Windows CMD 使用 \`.venv\Scripts\activate.bat\`；如果 PowerShell 禁止执行激活脚本，可以直接用 \`.venv\Scripts\python.exe -m pip ...\`。
 
-在无显示服务器上使用无窗口命令即可。实机键盘窗口没有在本次 Linux 无显示环境中打开；绘图输出与键盘回调经过自动测试。
+交互键位：
 
-## 2. 最小调用示例
+| 按键 | 动作 |
+|---|---|
+| \`W\` / \`S\` | 前进 / 后退 |
+| \`A\` / \`D\` | 原地左转 / 右转 |
+| 松开 \`W/A/S/D\` | 停车 |
+| 空格 | 停车 |
+| \`[\` / \`]\` | 将默认超声波舵机向右 / 左调节 |
+| \`P\` | 暂停或恢复仿真 |
+| \`Esc\` | 关闭窗口 |
 
-```python
+**坐标与单位：**世界 X 轴向右、Y 轴向上；\`yaw=0\` 朝 X 正向，逆时针为正。位置和距离用**米**，时间用**秒**，角度和角速度用**弧度 / rad/s**；只有名称带 \`_deg\` 的参数使用角度制。
+
+## 1. 第一个 Python 程序：加载、驱动、读取传感器
+
+在 \`envs/\` 下新建 \`my_experiment.py\`：
+
+\`\`\`python
 import math
 from robot_sim import RobotEnvironment
 
+# 字典的键是传感器实例名；名称与类型不相同时需提供 type。
 sensors = {
     "front": {
         "type": "ultrasonic",
         "frequency_hz": 10,
-        "max_range_m": 4.0,
         "min_range_m": 0.02,
+        "max_range_m": 4.0,
         "beam_width_deg": 15,
-        "noise_std_m": 0.0,
-        "mount": [0.06, 0.0, 0.0],  # 车身坐标：前方 6 cm
+        "noise_std_m": 0.0,       # 先用无噪声验证算法
+        "mount": [0.06, 0, 0],   # 相对车体中心：向前 6 cm
         "servo": True,
     },
-    "imu": {"frequency_hz": 100, "gyro_noise_std_rad_s": 0.005},
-    "encoder": {"enabled": False},
+    "imu": {"type": "imu", "frequency_hz": 100},
 }
 
-with RobotEnvironment("maps/01_empty_room.json", sensors=sensors, seed=42) as env:
+with RobotEnvironment(
+    map_path="maps/01_empty_room.json",
+    sensors=sensors,
+    physics_dt_s=0.01,
+    seed=42,
+) as env:
+    # 明确设置初始位置 x=1m, y=1m, yaw=0rad
     env.reset(pose=(1.0, 1.0, 0.0))
-    bot = env.robot
-    bot.set_motor_pwm(left=40, right=40)  # [-100,100]，持续保持
-    env.step(0.20)                       # 前进 20 个 10 ms 物理步
-    print(bot.read_sensor("front"))
-    print(bot.read_sensor("imu"))
+    robot = env.robot
 
-    bot.stop()
-    bot.set_servo("front", math.radians(30))
-    env.step(0.30)                       # 舵机需要转动、稳定和等待采样
-    print(bot.read_sensor("front"))
-    env.render(save_path="frame.png")
-```
+    # 设置左右轮有符号 PWM，取值范围 [-100, 100]
+    robot.set_motor_pwm(left=40, right=40)
+    env.step(0.20)                       # 推进 0.20 秒
+    robot.stop()
 
-`reset(random_spawn=True, seed=73)` 会随机选择**整个圆形车体都不碰撞**的位置；同一个种子重复 reset 会得到相同位置。更换种子才能得到不同随机场景。
+    sonar = robot.read_sensor("front")
+    imu = robot.read_sensor("imu")
+    print("sonar:", sonar)
+    print("imu:", imu)
 
-`env.load_map("maps/06_doorway.json")` 更换场景后，必须再次 `reset(...)`。`reset` 清零时间、运动状态、传感器缓存和累计编码器计数；录制期间禁止 reset 或换图。
+    # 停车后把超声波舵机指向车身左前方 30°
+    robot.set_servo("front", math.radians(30))
+    env.step(0.30)                       # 留出舵机运动、稳定与采样时间
+    print("new sonar:", robot.read_sensor("front"))
 
-## 3. 接口分工
+    env.render(save_path="my_experiment.png")
+    # 仅用于实验评估；不要把真值传给算法：
+    print("ground truth:", env.ground_truth())
+\`\`\`
 
-| 实验程序 `env` | 算法接收的 `env.robot` |
-|---|---|
-| `load_map(source)`，支持路径、字典、WorldMap | `set_motor_pwm(left, right)` |
-| `reset(pose=...)` / `reset(random_spawn=True)` | `stop()` |
-| `step(duration_s)`，省略参数推进一个物理步 | `set_servo(name, angle_rad)` |
-| `ground_truth()`，仅用于评估 | `read_sensor(name)` |
-| `render(save_path=..., show=False, estimated_pose=...)` | `get_observations()` |
-| `start_recording(path)` / `stop_recording()` | `sensor_names` / `time_s` |
-| `close()` / 上下文管理器 | 无真实位姿、真值地图和瞬移接口 |
+然后执行：
 
-控制器接收 `RobotPort`，仿真器由外层实验程序管理，见 [算法模板](examples/algorithm_template.py)。Python 私有属性隔离是工程约定，无法抵御刻意的运行时反射。
+\`\`\`bash
+python my_experiment.py
+\`\`\`
 
-真实小车接入时，另写实现同一接口的硬件适配器，将 PWM/传感器读写转换为通信协议。Python 算法可继续放在上位机；在 TM4C 上执行算法仍需要对应的 C 实现。本版本没有连接任何真实电机，也没有修改原仓库固件。
+注意：
 
-## 4. 传感器可自由组合
+- \`set_motor_pwm(...)\` 设置**持续保持**的驱动命令；必须明确调用 \`stop()\` 才会停车。
+- \`step()\` 默认推进一个物理步（默认 **0.01 s**）；\`step(0.20)\` 推进 20 步。时长必须是物理步长的整数倍。
+- \`reset(pose=(x, y, yaw))\` 的位姿必须让**整个圆形车体**不与障碍物相交。
+- \`read_sensor()\` 返回最近已交付的缓存观测；有采样延迟时可能暂时返回 \`None\`，多次读取不会重新抽噪声。
+- 如果要同时拿到所有已启用传感器，调用 \`robot.get_observations()\`。
 
-以字典的键作为传感器实例名，`type` 表示类型；同一类型可创建多份，例如前、左、右三个声呐。`sensors=None` 启用默认超声波、IMU、编码器、碰撞开关；`sensors={}` 全部禁用。`enabled=False` 单独禁用。
+### 从随机位置生成小车
 
-| 类型 | 输出 | 主要参数 |
+\`\`\`python
+env.reset(random_spawn=True, seed=73)
+\`\`\`
+
+随机起点会检查车体与障碍物的净空；相同地图、参数和种子可重现结果。**每次 \`load_map()\` 后都需要重新 \`reset()\`**。运行中不可把 \`reset()\` 当成控制小车瞬移的方法。
+
+## 2. 运行时 API：算法只依赖 RobotPort
+
+环境专门区分了**实验管理 API**和**机器人运行 API**：
+
+| API 所属对象 | 方法或属性 | 用途 |
 |---|---|---|
-| `ultrasonic` | 距离、回波时间、状态、名义朝向 | 范围、波束宽度、噪声、丢测、舵机范围/速度/稳定时间 |
-| `imu` | 三轴比力，平面 Z 轴角速度 | 采样率、角速度噪声/零偏/随机游走、加速度噪声、安装位置/角度 |
-| `encoder` | 左右累计计数和相邻采样增量 | 每转总计数 `ticks_per_rev`，已经包含 AB 相四倍频 |
-| `lidar` | 多方向测距与逐束状态 | `angles_rad`、量程、噪声、丢测 |
-| `infrared` | 简化近距距离与状态 | 量程、波束角、噪声、丢测；不输出器件模拟电压 |
-| `bumper` | 整车接触开关 | 采样率；锁存采样之间的碰撞事件 |
+| \`env\` | \`load_map(path_or_dict)\` | 加载 / 更换真值地图 |
+| \`env\` | \`reset(pose=...)\`、\`reset(random_spawn=True)\` | 初始化机器人、时钟与传感器 |
+| \`env\` | \`step(duration_s=None)\` | 推进仿真时间；返回所有当前观测 |
+| \`env\` | \`render(save_path=..., estimated_pose=...)\` | 显示地图、轨迹及可选的估计位姿 |
+| \`env\` | \`ground_truth()\` | **仅评估程序**可读真实位姿及速度 |
+| \`env.robot\` | \`set_motor_pwm(left, right)\`、\`stop()\` | 控制左右电机 |
+| \`env.robot\` | \`set_servo(sensor, angle_rad)\` | 调整支持舵机的超声波实例 |
+| \`env.robot\` | \`read_sensor(name)\` | 读取单个传感器观测 |
+| \`env.robot\` | \`get_observations()\` | 获取传感器观测字典 |
+| \`env.robot\` | \`sensor_names\`、\`time_s\` | 查看已启用传感器和仿真时间 |
 
-通用配置：`frequency_hz`、`latency_s`、`mount=[x_m,y_m,yaw_rad]`。安装位置必须在车体圆形轮廓内。编码器、碰撞开关按整车定义，安装参数固定为零。
+**你们的 SLAM、定位、A* 和控制算法应该只接收 \`RobotPort\`。** 主程序负责创建环境与调用 \`env.step()\`，算法内部只能发送电机/舵机命令和读取传感器：
 
-参数默认值与检查在 [config.py](robot_sim/config.py)。未知参数、无效范围、NaN、不可支持的采样率都会报错，避免悄悄忽略拼写错误。
+\`\`\`python
+from robot_sim import RobotEnvironment, RobotPort
 
-### 观测格式与时间
+class ObstacleStopController:
+    def update(self, robot: RobotPort):
+        frame = robot.read_sensor("ultrasonic")
+        if frame is None:
+            robot.stop()
+            return
+        # 过期、缺失的距离不能当作安全通道
+        if robot.time_s - frame["timestamp_s"] > 0.25:
+            robot.stop()
+        elif frame["data"]["status"] != "hit":
+            robot.stop()
+        elif frame["data"]["distance_m"] < 0.5:
+            robot.stop()
+        else:
+            robot.set_motor_pwm(35, 35)
 
-```json
-{
-  "sensor": "front", "type": "ultrasonic", "sequence": 2,
-  "timestamp_s": 0.2, "available_at_s": 0.23,
-  "data": {"distance_m": 1.24, "status": "hit", "bearing_rad": 0.0, "echo_time_s": 0.00723032}
+controller = ObstacleStopController()
+with RobotEnvironment(
+    "maps/02_central_box.json",
+    sensors={"ultrasonic": {}},
+) as env:
+    env.reset(pose=(0.6, 0.7, 0.0))
+    for _ in range(300):
+        controller.update(env.robot)
+        env.step()
+    env.render(save_path="controller_example.png")
+\`\`\`
+
+这个控制器只展示接口使用方法，**不构成可靠避障或导航算法**。完整代码见 [算法模板](examples/algorithm_template.py)。
+
+> 目前隔离是 Python 软件架构约定，不能防止故意通过反射访问内部属性。未来连接真实小车时，可以实现相同的 \`RobotPort\`，把驱动指令和观测读写映射到 TM4C/ESP 的通信协议；若想让算法在 MCU 上原生运行，需要另行移植。
+
+## 3. 传感器怎么选、怎么调参数？
+
+\`sensors=None\` 使用默认的**超声波 + IMU + 编码器 + 碰撞开关**；\`sensors={}\` 表示全部不启用。传感器实例的键是名称，\`type\` 是类型，同种传感器可以出现多次。
+
+| \`type\` | 读数 \`data\` 核心字段 | 常用配置 |
+|---|---|---|
+| \`ultrasonic\` | \`distance_m\`、\`status\`、\`bearing_rad\`、\`echo_time_s\` | \`min_range_m\`、\`max_range_m\`、\`beam_width_deg\`、\`servo\` |
+| \`imu\` | \`angular_velocity_rad_s\`、\`specific_force_m_s2\` | \`gyro_noise_std_rad_s\`、\`gyro_bias_rad_s\`、\`accel_noise_std_m_s2\` |
+| \`encoder\` | \`left_ticks\`、\`right_ticks\`、\`left_delta\`、\`right_delta\` | \`ticks_per_rev\`（已包含 AB 相解码倍频及减速比） |
+| \`lidar\` | \`angles_rad\`、\`ranges_m\`、\`statuses\` | \`angles_rad\`、\`max_range_m\`、\`noise_std_m\` |
+| \`infrared\` | \`distance_m\`、\`status\`、\`bearing_rad\` | \`min_range_m\`、\`max_range_m\`、\`beam_width_deg\` |
+| \`bumper\` | \`contact\` | \`frequency_hz\` |
+
+所有类型支持 \`enabled\`、\`frequency_hz\`、\`latency_s\`、\`mount=[x_m,y_m,yaw_rad]\`，其中编码器和碰撞开关的安装位姿固定为零。另有传感器专属参数，请看 [配置校验代码](robot_sim/config.py)。
+
+推荐的**可对比实验配置**：
+
+\`\`\`python
+sonar_only = {
+    "ultrasonic": {"noise_std_m": 0.01, "dropout_probability": 0.02}
 }
-```
 
-这是格式示例；`echo_time_s` 在实际运行时由同一次距离样本计算。
+sonar_and_imu = {
+    **sonar_only,
+    "imu": {"frequency_hz": 100, "gyro_noise_std_rad_s": 0.005}
+}
 
-`timestamp_s` 是采集时间，`available_at_s` 是延迟后的可读时间。`sequence` 用于去重。第一次数据尚未到达时返回 `None`。重复读取返回同一份样本的独立副本，**不会重新抽取噪声**。
+sonar_and_encoder = {
+    **sonar_only,
+    "encoder": {"frequency_hz": 50, "ticks_per_rev": 1440}
+}
+\`\`\`
 
-测距状态：`hit`、`no_echo`、`below_min`、`dropout`、`servo_unsettled`。除 `hit` 外距离均为 `None`，不能把它们写成“前方空闲”或“最大距离处有墙”。
+在不同传感器组合下复用相同地图、运动序列和种子，比较定位算法的输出。更完整的例子见 [传感器对照实验](examples/sensor_ablation.py)。
 
-声呐 `bearing_rad` 表示安装方向加舵机指令角；不包含车体真实世界朝向，不提供反射点在声束内的真实角度。
+### 一帧传感器数据长什么样？
 
-默认物理步长 0.01 s。采样周期和延迟必须是其整数倍，例如 100/50/20/10 Hz。30 Hz 在该步长下会明确报错；可改用支持它的物理步长，例如 1/300 s，同时重新检查所有周期。
+\`\`\`json
+{
+  "sensor": "ultrasonic",
+  "type": "ultrasonic",
+  "sequence": 3,
+  "timestamp_s": 0.3,
+  "available_at_s": 0.3,
+  "data": {
+    "distance_m": 1.25,
+    "status": "hit",
+    "bearing_rad": 0.0,
+    "echo_time_s": 0.00728863
+  }
+}
+\`\`\`
 
-## 5. 地图格式和实测图导入
+上述数字仅用于展示数据结构。\`timestamp_s\` 是采样时间，\`available_at_s\` 是数据可供读取的时间。使用 \`sequence\` 可识别重复观测。
 
-采用有版本号的 JSON。地图可包含实体多边形、零厚度墙段或占据栅格。`bounds` 的四条边始终是实体外墙。
+超声波可能返回 \`hit\`、\`no_echo\`、\`below_min\`、\`dropout\`、\`servo_unsettled\`。**只有 \`hit\` 的 \`distance_m\` 是有效数值**，其他状态下为 \`None\`；不要把无回波解释为无遮挡。超声波 \`bearing_rad\` 是车身相对指向，**不包含车身的世界航向**。
 
-```json
+### 调整差速小车的物理参数
+
+\`\`\`python
+env = RobotEnvironment(
+    "maps/01_empty_room.json",
+    robot={
+        "radius_m": 0.10,
+        "wheel_base_m": 0.135,
+        "wheel_radius_m": 0.0325,
+        "max_wheel_speed_m_s": 0.30,
+        "motor_tau_s": 0.08,
+        "left_gain": 1.0,
+        "right_gain": 0.98,
+        "left_slip": 0.02,
+        "right_slip": 0.02
+    },
+)
+\`\`\`
+
+左右轮速度、转角和小车位姿通过差速运动学更新；可模拟电机响应滞后、增益不一致、固定打滑比例和碰撞。没有轮胎接触力、真实电机电流、三维姿态等完整物理模型。
+
+**频率约束：**物理步长默认 0.01 s，因此支持每 1、2、5、10 个物理步等整数周期的采样，如 100 Hz、50 Hz、20 Hz、10 Hz；30 Hz 不能直接配合 0.01 s 使用，会抛出异常。采样延迟也必须是物理步长的整数倍。
+
+## 4. 加载自定义地图；导入后续真实扫图结果
+
+地图使用**版本化 JSON**，并支持多边形、墙段和二维占据栅格。如下示例代表 4m × 4m 的场地，以及一个矩形障碍物：
+
+\`\`\`json
 {
   "version": 1,
   "units": "m",
   "name": "my_room",
   "bounds": [0, 0, 4, 4],
-  "polygons": [[[1.5, 1.5], [2.0, 1.5], [2.0, 2.2], [1.5, 2.2]]],
-  "walls": [[[3.0, 0.5], [3.4, 1.5]]]
+  "polygons": [
+    [[1.5, 1.5], [2.0, 1.5], [2.0, 2.2], [1.5, 2.2]]
+  ],
+  "walls": []
 }
-```
+\`\`\`
 
-多边形末尾不要重复首点。支持凹多边形；拒绝自交、多边形面积为零、越界坐标和无效墙段。几何/尺寸约束由运行时进一步检查，结构定义见 [map.schema.json](docs/map.schema.json)。
+将它保存为 \`maps/my_room.json\`，随后：
 
-**实测建图最直接的入口：**
+\`\`\`python
+env = RobotEnvironment("maps/my_room.json")
+env.reset(pose=(0.6, 0.6, 0))
+\`\`\`
 
-```python
+地图的四条边自动视为实体边界；\`polygons\` 是有面积的实体，\`walls\` 为线段障碍。拒绝自交多边形、越界障碍和不合法的几何；完整结构参见 [地图 Schema](docs/map.schema.json)。
+
+**真实超声波扫图的推荐输出：Occupancy Grid。** 当你们的 SLAM 已生成具有实际坐标和分辨率的栅格时，可以转成相同的 JSON 地图：
+
+\`\`\`python
+import numpy as np
 from robot_sim import WorldMap
-# cells[row, col]：-1 未知；0..100 占用概率百分数。
-world = WorldMap.from_occupancy(cells, resolution_m=0.05,
-                                origin_m=(-1.0, -1.0),
-                                unknown_policy="occupied")
+
+# -1 = 未知，0..100 = 占用概率百分数
+cells = np.array([
+    [100, 100, 100, 100],
+    [100,   0,   0, 100],
+    [100,   0,   0, 100],
+    [100, 100, 100, 100],
+])
+world = WorldMap.from_occupancy(
+    cells,
+    resolution_m=0.10,
+    origin_m=(0, 0),
+    unknown_policy="occupied"
+)
 world.save("measured_map.json")
-```
+\`\`\`
 
-栅格第 0 行位于地图底部，列向右、行向上。原点为左下角，单位为米；默认占用阈值 65。保留原始栅格值，模拟碰撞和回波时按阈值生成实体。已知概率低于阈值的格子按空闲处理；未实现概率占据随机采样。
+\`cells[0]\` 是地图**最底部**一行，列向右、行向上；\`origin_m\` 是左下角。采用阈值 65（0..100）决定实体障碍。带未知格（-1）的地图必须显式指定 \`unknown_policy="occupied"\` 或 \`"free"\`；前者保守，后者会假设未探测区域可通行。
 
-未知格默认拒绝进入真值仿真，调用者必须显式选择 `occupied` 或 `free`。选择 `free` 是实验假设，会掩盖未探测障碍，必须在实验记录中说明。输入数据中的 -1 仍保留，方便地图评估。
+CSV、NPY、PNG、PGM、BMP 也可以使用命令行转换：
 
-```bash
-# -1 / 0..100 百分数矩阵
-python -m robot_sim.convert measured.npy measured.json --resolution 0.05 --unknown-policy occupied
-# -1 / 0 / 1 二值矩阵
-python -m robot_sim.convert measured.csv measured.json --resolution 0.05 --encoding binary
-# -1 或 [0,1] 概率矩阵
-python -m robot_sim.convert measured.npy measured.json --resolution 0.05 --encoding probability --unknown-policy occupied
-# 图片：黑色为障碍，白色为空闲，中间灰度未知；自动翻转图片行坐标
-python -m robot_sim.convert measured.pgm measured.json --resolution 0.05 --unknown-policy occupied
-```
+\`\`\`bash
+# 从二维整数占用概率栅格（-1, 0..100）导入
+python -m robot_sim.convert recorded.npy maps/from_robot.json \
+  --resolution 0.05 --unknown-policy occupied
 
-CSV/NPY 的行若来自图片坐标，添加 `--top-to-bottom`；PNG/PGM 已自动翻转，不需要该选项。图片导入只有比例尺与平移原点，不自动识别照片透视或地图旋转。
+# 二值栅格（-1,0,1）
+python -m robot_sim.convert recorded.csv maps/from_robot.json \
+  --resolution 0.05 --encoding binary --unknown-policy occupied
 
-**原始超声波距离日志需要先经过你们的建图算法，得到带坐标的栅格。转换工具不承担 SLAM。**
+# PNG 图像：黑色为占用、白色为空闲，灰色中间区间为未知
+python -m robot_sim.convert recorded.png maps/from_image.json \
+  --resolution 0.05 --unknown-policy occupied
+\`\`\`
 
-## 6. 可重复实验与评估
+CSV/NPY 来源如果按图片行序（上→下）存储，添加 \`--top-to-bottom\`；图片输入会自动翻转。原始超声波日志只包含测距，**必须先经过你们的建图算法生成空间占用栅格**，格式转换器不会自动做 SLAM。详见 [地图转换实现](robot_sim/convert.py)。
 
-```python
-from robot_sim import replay, pose_errors, occupancy_iou
+项目附带 10 张测试地图，位于 [maps/](maps/)：空房间、中央障碍、L 形走廊、T 路口、斜墙、门洞、折线迷宫、不规则场景、杂物区和栅格导入场景。
 
-env.reset(pose=(1, 1, 0), seed=42)
-env.start_recording("trial.jsonl")  # 必须在任何运动/舵机指令前
-# ... 通过 env.robot 发指令，通过 env.step 推进 ...
-env.stop_recording()
-restored = replay("trial.jsonl", verify=True)
-```
+## 5. 停车扫描、记录与复现
 
-日志包含地图内容和哈希、配置、种子、初始位姿、控制命令、观测和评估真值。回放重新执行指令并逐值比对输出。确定性保证限定于相同代码和运行依赖版本。
+最贴近你们 HC-SR04 + SG90 的例子：
 
-每个传感器的随机流由“全局种子 + 实例名”独立生成；更换传感器组合不会扰动原有实例的噪声序列。随机放置使用另一条随机流。
+\`\`\`bash
+python examples/scan_stationary.py
+\`\`\`
 
-`pose_errors(truth, estimated)` 计算位置 RMSE、最大位置误差和包角后的航向 RMSE；要求估计和真值在同一坐标系、同一时间点。`occupancy_iou` 仅比较双方都已知的对齐栅格，并返回已知覆盖率。
+它会停车、逐角度转动单个超声波模块，等待稳定后的有效采样，再把测距结果打印出来，最后保存 \`stationary_scan.png\`。
 
-[三组合对照示例](examples/sensor_ablation.py) 执行同一指令序列并生成日志。它没有预设“编码器一定更好”的结果；定位质量需要你们把算法估计值接入评估函数。
+记录和重放一次实验：
 
-## 7. 模型边界
+\`\`\`python
+from robot_sim import RobotEnvironment, replay
 
-本版本采用平地、静态二维环境、圆形车身和差速模型。可以配置左右电机增益、响应时间和固定打滑比例；没有完整轮胎动力学、悬架或电机电流模型。
+with RobotEnvironment("maps/01_empty_room.json", seed=42) as env:
+    env.reset(pose=(1, 1, 0))
+    env.start_recording("trial.jsonl")   # reset 后、任何控制命令前
 
-碰撞使用扫掠检测和圆弧弦误差保护，防止高速穿墙。接触时保守停在上一个物理步的位置；不处理接触滑动、弹跳、推箱子。编码器仍记录轴转动，便于测试“轮子转了但车没走”。
+    env.robot.set_motor_pwm(40, 40)
+    env.step(0.5)
+    env.robot.stop()
+    env.step(0.1)
+    env.stop_recording()
 
-IMU 不返回完美航向或位置；水平静止时加速度计比力为 `[0,0,+g]`。角速度仅模拟平面 Z 轴，俯仰、横滚及对应噪声未建模。加速度采用离散时间差分和转动项，碰撞冲击波形不具备物理保真度。
+replayed = replay("trial.jsonl", verify=True)
+replayed.render(save_path="replay.png")
+replayed.close()
+\`\`\`
 
-LiDAR 一帧按同一时刻采集，不模拟一圈扫描中的运动畸变。超声波传播时长作为输出给出，场景几何在采样时瞬时求值；`latency_s` 为固定交付延迟，不自动等于往返声时。
+录制内容包括地图、配置、种子、运动命令、观测数据和评估真值；重放时重新计算并逐项比对。相同代码及依赖版本下可以得到确定性结果。运行对照示例：
 
-本版本提供实验环境和评估工具，不包含已经验证的 SLAM、A* 导航系统或硬件固件。导航成功率须在接入相应算法后单独评估。
+\`\`\`bash
+python examples/sensor_ablation.py
+\`\`\`
 
-## 8. 目录
+它会执行相同的预设命令并生成不同传感器组合的日志；它本身**不会输出定位算法优劣结论**。
 
-```text
-robot_sim/     环境、传感器、几何、地图、转换、可视化、指标
-maps/          10 张实际 JSON 地图
-configs/       理想/噪声配置、100 个验收起点
-examples/      控制器模板、停车扫描、传感器组合对照、地图生成
- tests/        数学基准、GEOS 独立校验、运动/时序/回放、完整验收
-reports/       实际测试输出、验收明细、逐段观测日志、示例图
- docs/         地图 Schema、数学模型、调研依据
-```
+评估接口在 \`robot_sim.metrics\`（也可从 \`robot_sim\` 直接导入）：
 
-调研依据与实现取舍见 [REFERENCE_REVIEW.md](docs/REFERENCE_REVIEW.md)。
+- \`pose_errors(truth, estimate)\`：对齐的 \`N×3\` 位姿数组，返回位置 RMSE、最大位置误差和朝向 RMSE。
+- \`occupancy_iou(truth, estimate)\`：对齐的二维占据栅格，返回已知区域的占用 IoU 和已知覆盖比例。
+
+真值只能在**实验评估程序**中读取。你的算法应只从 \`RobotPort\` 获取传感器数据，否则测出来的定位精度没有意义。
+
+## 6. 测试和故障排查
+
+\`\`\`bash
+# 从 envs/ 运行所有测试
+python -m pytest -q
+
+# 生成覆盖率结果
+python -m coverage run -m pytest -q
+python -m coverage report
+\`\`\`
+
+随仓库提交的 [测试报告](reports/TEST_REPORT.md) 记录了初版在 10 张地图 × 每图 10 个起点 × 每条轨迹 20 段运动下的验证，以及测距的独立 Shapely/GEOS 数学核验。历史记录显示 **90 项 pytest 通过、92.58% 代码语句覆盖率**；这些数字属于初版构建时的本地测试记录，后续更改代码后应重新运行。
+
+常见报错：
+
+| 现象 | 检查 |
+|---|---|
+| \`ModuleNotFoundError: robot_sim\` | 是否在 \`envs/\` 安装了 \`pip install -e .\` |
+| 起始位姿无效 | \`reset\` 所选位置和整个车身半径是否有足够净空 |
+| \`step\` 或采样频率报错 | 时长 / 采样周期是否为 \`physics_dt_s\` 的整数倍 |
+| \`read_sensor(...)\` 返回 \`None\` | 传感器延迟尚未到达，或还未产生已交付样本 |
+| 测距 \`distance_m=None\` | 检查 \`status\`（超量程、盲区、丢测、舵机尚未稳定） |
+| 交互窗口打不开 | 需要桌面显示服务与可用的 Matplotlib GUI 后端；使用 \`--save\` 无窗口运行 |
+| 更换地图后不能运动 | \`load_map\` 后必须再次 \`reset\` |
+
+## 7. 边界与源码结构
+
+本项目目前支持静态二维场景、差速小车、简化声呐扇区模型、简化平面 IMU、轮编码器、红外距离、LiDAR 和碰撞开关。**没有完整真实声学反射、材料吸收、多径、三维姿态、轮胎动力学，也没有内置可直接评价的 SLAM / A* 算法。** 数值核验精度不代表实际 HC-SR04 的硬件精度。
+
+\`\`\`text
+envs/
+├── README.md                  本文
+├── robot_sim/                 核心环境、RobotPort、地图、运动、传感器、评估
+├── maps/                      10 张场景地图
+├── configs/                   ideal / noisy / 验收初始位置
+├── examples/                  算法模板、停车扫描、传感器对照、地图生成
+├── docs/                      地图 Schema、模型推导、参考项目调查
+├── tests/                     几何、传感器、环境、验收与工具测试
+└── reports/                   历史验收记录、可视化和可回放日志
+\`\`\`
+
+技术细节可以继续阅读 [数学与传感器模型](docs/MODELS.md) 和 [参考项目调研](docs/REFERENCE_REVIEW.md)。
