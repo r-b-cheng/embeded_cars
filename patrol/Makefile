@@ -8,18 +8,35 @@ BOARD := ../servo_sg90
 SOURCES := $(wildcard firmware/*.c) $(WHEEL)/wheel.c $(WHEEL)/board_tm4c123g.c \
            $(addprefix $(LIB)/src/,clib_port.c clib_motor.c clib_ultrasonic.c)
 .PHONY: all test
-all: dist/patrol.bin
-build/patrol.elf: $(SOURCES) $(wildcard firmware/*.h) firmware/vectors.ld $(BOARD)/startup.S $(BOARD)/tm4c123gh6pm.ld
-	mkdir -p build
-	$(ARM)-gcc $(CFLAGS) $(ARCH) -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 \
+all:
+ELF := build/patrol.elf
+ifdef PERSONAL
+ELF := build/personal/patrol.elf
+RADIO_FLAGS := -DPATROL_PERSONAL -Ibuild/personal
+$(ELF): build/personal/hotspot.h
+endif
+$(ELF): $(SOURCES) $(wildcard firmware/*.h) firmware/vectors.ld $(BOARD)/startup.S $(BOARD)/tm4c123gh6pm.ld
+	mkdir -p $(@D)
+	$(ARM)-gcc $(RADIO_FLAGS) $(CFLAGS) $(ARCH) -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 \
 	  -I$(TIVAWARE) -I$(LIB)/include -I$(WHEEL) $(BOARD)/startup.S $(SOURCES) \
 	  -nostartfiles --specs=nano.specs --specs=nosys.specs -Wl,--gc-sections,-z,noexecstack,--fatal-warnings \
 	  -T firmware/vectors.ld -L$(TIVAWARE)/driverlib/gcc \
 	  -ldriver -lm -o $@
 	$(ARM)-size $@
-dist/patrol.bin: build/patrol.elf
+ifndef PERSONAL
+all: dist/patrol.bin
+dist/patrol.bin: $(ELF)
 	mkdir -p dist
 	$(ARM)-objcopy -O binary $< $@
+
+else
+all: build/personal/patrol.bin
+build/personal/patrol.bin: $(ELF)
+	$(ARM)-objcopy -O binary $< $@
+endif
+.PHONY: personal
+personal:
+	$(MAKE) PERSONAL=1 build/personal/patrol.bin
 
 .PHONY: sim
 sim: build/sim_car.so
@@ -28,14 +45,19 @@ build/sim_car.so: tests/sim_car.c firmware/control.c firmware/protocol.c $(wildc
 	$(CC) $(CFLAGS) -fPIC -shared -Ifirmware $(filter %.c,$^) -lm -o $@
 
 JAVA_SRC := android/src/org/embeddedcars/patrol
-test: build/control_test build/java/org/embeddedcars/patrol/NavigationTest.class sim
+test: build/control_test build/station_test build/java/org/embeddedcars/patrol/NavigationTest.class sim
 	./build/control_test
+	./build/station_test
 	java -ea -cp build/java org.embeddedcars.patrol.NavigationTest
 	python3 tests/system_test.py
 
-build/control_test: tests/control_test.c firmware/control.c firmware/radio.c firmware/protocol.c $(wildcard firmware/*.h)
+HOST_TEST_SRC := tests/control_test.c firmware/control.c firmware/radio.c firmware/journal.c firmware/protocol.c
+build/station_test: $(HOST_TEST_SRC) $(wildcard firmware/*.h) tests/hotspot.h
 	mkdir -p build
-	$(CC) $(CFLAGS) -Ifirmware $(filter %.c,$^) -lm -o $@
+	$(CC) $(CFLAGS) -Ifirmware -Itests -DPATROL_PERSONAL $(HOST_TEST_SRC) -lm -o $@
+build/control_test: $(HOST_TEST_SRC) $(wildcard firmware/*.h)
+	mkdir -p build
+	$(CC) $(CFLAGS) -Ifirmware $(HOST_TEST_SRC) -lm -o $@
 
 build/java/org/embeddedcars/patrol/NavigationTest.class: tests/NavigationTest.java $(addprefix $(JAVA_SRC)/,Pilot.java Grid.java Frame.java)
 	mkdir -p build/java

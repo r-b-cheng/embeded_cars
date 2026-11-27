@@ -4,25 +4,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef PATROL_PERSONAL
+#include "hotspot.h"
+#endif
 #ifndef PATROL_AP_PASSWORD
 #define PATROL_AP_PASSWORD "SurveyCar01"
 #endif
 /* Stop-and-wait TCP. AT status lines and counted binary +IPD may interleave. */
 static const char *const setup[] = {
     "AT+RST\r\n",        "ATE0\r\n",
+#ifdef PATROL_PERSONAL
+    "AT+CWMODE=1\r\n", "AT+CWDHCP=1,1\r\n",
+    "AT+CWJAP=" HOTSPOT_ARGUMENTS "\r\n",
+    "AT+CIPSTA?\r\n",
+#else
     "AT+CWMODE=2\r\n",   "AT+CWSAP=\"Patrol-Car\",\"" PATROL_AP_PASSWORD "\",6,3\r\n",
+#endif
     "AT+CIPMODE=0\r\n",  "AT+CIPMUX=1\r\n",
     "AT+CIPDINFO=0\r\n", "AT+CIPSERVER=1,7070\r\n"};
-enum { SETUP, LISTEN, PROMPT, SENDING, RETRY };
+enum { SETUP, LISTEN, PROMPT, SENDING, RETRY, DIAL };
 static int phase, step, owner, source;
 static uint32_t started, remaining;
 static Car *vehicle;
+static Journal *journal;
+static uint32_t cursor;
+#ifdef PATROL_PERSONAL
+static uint32_t last_dial;
+static char gateway[16];
+#endif
 static char line[96], request[40], reply[REPLY_SIZE];
 static unsigned used, size;
 static bool discard, handshaken;
 static uint32_t payload_at;
 
 static void release(void) {
+    if (handshaken) ++vehicle->disconnects;
+    cursor = 0;
     car_command(vehicle, 'S', vehicle->last_tick);
     owner = -1;
     handshaken = false;
@@ -30,16 +47,18 @@ static void release(void) {
     discard = false;
 }
 
-static void reset_link(uint32_t now) {
+void radio_reset(uint32_t now) {
     release();
     used = remaining = 0;
     phase = RETRY;
     started = now;
 }
 
-void radio_init(Car *car) {
+void radio_init(Car *car, Journal *log) {
     vehicle = car;
-    reset_link(0);
+    journal = log;
+    handshaken = false;
+    radio_reset(0);
 }
 
 static void configure(uint32_t now) {
@@ -49,19 +68,34 @@ static void configure(uint32_t now) {
 }
 
 void radio_tick(uint32_t now) {
+#ifdef PATROL_PERSONAL
+    if (phase == LISTEN && owner < 0 && gateway[0] && now - last_dial >= 3000) {
+        char command[64];
+        snprintf(command, sizeof command, "AT+CIPSTART=4,\"TCP\",\"%s\",7071\r\n", gateway);
+        last_dial = started = now;
+        phase = DIAL;
+        radio_write(command);
+    } else if (phase == DIAL && now - started > 12000)
+        radio_reset(now);
+#endif
     if (remaining && now - payload_at > 500)
-        reset_link(now);
+        radio_reset(now);
     if (phase == RETRY && now - started >= 1000) {
+#ifdef PATROL_PERSONAL
+        gateway[0] = 0;
+#endif
         step = 0;
         configure(now);
     } else if ((phase == SETUP || phase == PROMPT || phase == SENDING) &&
-               now - started > (phase == SETUP ? 7000u : 1000u)) {
-        reset_link(now);
+               now - started > (phase == SETUP ? 30000u : 1000u)) {
+        radio_reset(now);
     }
 }
 
-static void respond(unsigned seq, uint32_t now) {
-    int n = telemetry(reply, vehicle, seq);
+static void respond(const Request *r, uint32_t now) {
+    Event event = r->extended ? journal_after(journal, cursor) : (Event){0};
+    if (event.id) cursor = event.id;
+    int n = telemetry(reply, vehicle, r, event, journal && journal->failed);
     char send[32];
     snprintf(send, sizeof send, "AT+CIPSEND=%d,%d\r\n", owner, n);
     phase = PROMPT;
@@ -96,10 +130,34 @@ static void command_byte(char c, uint32_t now) {
         handshaken = true;
     apply_request(vehicle, &r, now);
     if (phase == LISTEN && valid)
-        respond(r.seq, now);
+        respond(&r, now);
 }
 
 static void event(uint32_t now) {
+#ifdef PATROL_PERSONAL
+    if (phase == SETUP && step == 5 && !strncmp(line, "+CIPSTA:gateway:\"", 17)) {
+        const char *ip = line + 17;
+        size_t n = strspn(ip, "0123456789.");
+        if (n > 0 && n < sizeof gateway && !strcmp(ip + n, "\"")) {
+            memcpy(gateway, ip, n);
+            gateway[n] = 0;
+        }
+        return;
+    }
+    if (!strcmp(line, "WIFI DISCONNECT") && (phase != SETUP || step > 4)) {
+        radio_reset(now);
+        return;
+    }
+    /* A refused dial can report CLOSED before its final ERROR. */
+    if (phase == LISTEN && owner < 0 && !strcmp(line, "ERROR"))
+        return;
+    if (phase == DIAL && (!strcmp(line, "ERROR") || !strcmp(line, "FAIL") ||
+                          !strcmp(line, "4,CLOSED"))) {
+        phase = LISTEN;
+        last_dial = now;
+        return;
+    }
+#endif
     if (!strcmp(line, "ready")) {
         release();
         step = 1;
@@ -110,17 +168,18 @@ static void event(uint32_t now) {
         else
             configure(now);
     } else if (strlen(line) == 9 && !strcmp(line + 1, ",CONNECT") && line[0] >= '0' &&
-               line[0] <= '4' && phase == LISTEN && owner < 0) {
+               line[0] <= '4' && (phase == LISTEN || phase == DIAL) && owner < 0) {
         owner = line[0] - '0';
+        phase = LISTEN;
     } else if (strlen(line) == 8 && !strcmp(line + 1, ",CLOSED") && line[0] - '0' == owner) {
         if (phase == LISTEN)
             release();
         else
-            reset_link(now);
+            radio_reset(now);
     } else if (phase == SENDING && !strcmp(line, "SEND OK")) {
         phase = LISTEN;
     } else if (!strcmp(line, "ERROR") || !strcmp(line, "FAIL") || !strcmp(line, "SEND FAIL")) {
-        reset_link(now);
+        radio_reset(now);
     }
 }
 
@@ -151,7 +210,7 @@ void radio_byte(char c, uint32_t now) {
         unsigned long length = strtoul(line + 7, &end, 10);
         if (line[5] < '0' || line[5] > '4' || line[6] != ',' || *end || length == 0 ||
             length > 65535) {
-            reset_link(now);
+            radio_reset(now);
             return;
         }
         remaining = length;
@@ -161,7 +220,7 @@ void radio_byte(char c, uint32_t now) {
         return;
     }
     if (used == sizeof line - 1) {
-        reset_link(now);
+        radio_reset(now);
         return;
     }
     line[used++] = c;

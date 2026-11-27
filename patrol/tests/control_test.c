@@ -77,11 +77,34 @@ static void api(void) {
 
 static void at_server(void) {
     Car c = {.command = 'S'};
-    radio_init(&c);
+    radio_init(&c, NULL);
     radio_tick(1000);
     assert(strstr(out, "AT+RST"));
     bytes("OK\r\nready\r\n", 1400);
     assert(strstr(out, "ATE0"));
+#ifdef PATROL_PERSONAL
+    bytes("OK\r\n", 1410);
+    assert(strstr(out, "AT+CWMODE=1"));
+    bytes("OK\r\n", 1420);
+    assert(strstr(out, "AT+CWDHCP=1,1"));
+    bytes("OK\r\n", 1425);
+    assert(strstr(out, "AT+CWJAP="));
+    bytes("WIFI CONNECTED\r\nWIFI GOT IP\r\nOK\r\n", 1430);
+    assert(strstr(out, "AT+CIPSTA?"));
+    bytes("+CIPSTA:gateway:\"192.168.43.1\"\r\n", 1440);
+    for (int i = 0; i < 5; i++) bytes("OK\r\n", 1450);
+    radio_tick(4500);
+    assert(strstr(out, "AT+CIPSTART=4,\"TCP\",\"192.168.43.1\",7071"));
+    bytes("4,CLOSED\r\nERROR\r\n", 4510);
+    radio_tick(7510);
+    bytes("4,CONNECT\r\nOK\r\n+IPD,4,6:1 V S\n", 7520);
+    assert(strstr(out, "AT+CIPSEND=4,"));
+    bytes("OK\r\n> ", 7521);
+    assert(strstr(out, "T 1 "));
+    bytes("SEND OK\r\n+IPD,4,6:2 V F\nWIFI DISCONNECT\r\n", 7530);
+    assert(c.command == 'S' && c.disconnects == 1);
+    return;
+#endif
     for (int i = 0; i < 7; i++)
         bytes("OK\r\n", 1500);
     bytes("0,CONNECT\r\n+IPD,0,4:1 F\n", 1600);
@@ -103,9 +126,81 @@ static void at_server(void) {
     bytes("0,CLOSED\r\n", 1701);
     assert(c.command == 'S');
 }
+static Event slots[LOG_SLOTS];
+bool log_erase_page(unsigned slot) {
+    assert(slot == 0 || slot == PAGE_SLOTS);
+    memset(slots + slot, 0xff, 1024);
+    return true;
+}
+bool log_program(unsigned slot, const Event *e) {
+    assert(slots[slot].id == UINT32_MAX);
+    slots[slot] = *e;
+    return true;
+}
+static void persistence(void) {
+    Journal j;
+    memset(slots, 0xff, sizeof slots);
+    journal_open(&j, slots);
+    for (unsigned i = 1; i <= 160; i++) journal_append(&j, i * 1000, EV_BOOT);
+    slots[j.next].id = 161; /* interrupted program, checksum still erased */
+    journal_open(&j, slots);
+    assert(j.newest == 160 && journal_after(&j, 0).id == 65);
+    journal_append(&j, 456, EV_BUTTON);
+    assert(journal_after(&j, 160).code == EV_BUTTON);
+    assert(!journal_after(&j, 161).id);
+}
+static void measured_motion(void) {
+    Car c = {.command = 'S', .imu_ready = true};
+    Request r;
+    assert(!parse_request("1 V D 0 100", &r) && !parse_request("1 V A 1 0", &r));
+    assert(parse_request("1 V D 1 100", &r));
+    car_feedback(&c, 0, 0, 0);
+    for (unsigned i = 0; i <= 12; i++) {
+        uint32_t now = i * 100;
+        apply_request(&c, &r, now);
+        car_feedback(&c, i, 0, now);
+        ranges(&c, now, 900, 900, 900);
+        car_tick(&c, now, false);
+        assert(c.state == (i >= 10 ? DONE : DRIVING));
+    }
+    assert(c.speed_mm_s >= 100 && c.speed_mm_s < 105 && c.left == 0);
+    assert(parse_request("2 V A 2 -90", &r));
+    for (unsigned i = 0; i <= 10; ++i) {
+        uint32_t now = 2000 + 10 * i;
+        apply_request(&c, &r, now);
+        car_feedback(&c, 12 + i, i ? -10 : 0, now);
+        ranges(&c, now, 900, 900, 900);
+        car_tick(&c, now, false);
+        assert(c.state == (i >= 9 ? DONE : DRIVING));
+    }
+    car_command(&c, 'S', 2150);
+    for (unsigned now = 2200; now <= 3400; now += 100) {
+        car_command(&c, 'F', now);
+        ranges(&c, now, 900, 900, 900);
+        car_feedback(&c, c.pulses, 0, now);
+        car_tick(&c, now, false);
+    }
+    assert(c.state == FEEDBACK_FAULT && !c.left);
+    car_command(&c, 'S', 3500);
+    c.imu_ready = false;
+    car_command(&c, 'R', 3500);
+    car_tick(&c, 3500, false);
+    assert(c.state == FEEDBACK_FAULT && !c.right);
+    c.command = 'D';
+    car_task(&c, 'D', 33, 100, 4000);
+    assert(c.state == FEEDBACK_FAULT);
+    c.state = OUTPUT_FAULT;
+    car_command(&c, 'S', 4010);
+    car_task(&c, 'A', 1, 45, 4020);
+    car_tick(&c, 4030, true);
+    assert(c.state == OUTPUT_FAULT && !c.left && !c.right);
+}
+
 int main(void) {
     safety();
     api();
     at_server();
+    persistence();
+    measured_motion();
     puts("C motion interlocks and ESP-AT transcript passed");
 }

@@ -90,8 +90,11 @@ static void board_motor_set_duty(uint8_t ch, uint8_t duty)
     uint8_t pin = pins[ch];
     /* A compare at LOAD or beyond it cannot reliably generate DC levels. */
     if (duty == 0u || duty == 100u) {
+        /* The peripheral owns the pin until AFSEL is cleared. Set the
+           requested DC level after returning control to GPIO as well. */
         GPIOPinWrite(GPIO_PORTB_BASE, pin, duty ? pin : 0);
         GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, pin);
+        GPIOPinWrite(GPIO_PORTB_BASE, pin, duty ? pin : 0);
         return;
     }
     GPIOPinTypePWM(GPIO_PORTB_BASE, pin);

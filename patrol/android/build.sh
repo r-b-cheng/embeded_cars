@@ -19,5 +19,5 @@ jar cf build/classes.jar -C build/classes .
 (cd build/dex && "$bt/aapt" add ../base.apk classes.dex)
 "$bt/zipalign" -f 4 build/base.apk build/aligned.apk
 "$bt/apksigner" sign --ks "$key" --ks-pass pass:android --ks-key-alias androiddebugkey \
-    --v4-signing-enabled false --out ../dist/patrol-debug.apk build/aligned.apk
+    --v4-signing-enabled true --out ../dist/patrol-debug.apk build/aligned.apk
 "$bt/apksigner" verify ../dist/patrol-debug.apk

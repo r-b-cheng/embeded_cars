@@ -1,11 +1,12 @@
 #include <math.h>
 #include <string.h>
 #include "protocol.h"
+#include "calibration.h"
 
 /* The simulated floor uses independent ground truth. Only the C controller's
    estimated pose and simulated sonar are exposed to the phone. */
 static Car car;
-static double x, y, theta;
+static double x, y, theta, wheel_travel;
 static uint32_t last, ping;
 static unsigned scan;
 static bool obstacle_course;
@@ -35,7 +36,7 @@ void sim_reset(void) {
     contacts = 0;
     memset(&car, 0, sizeof car);
     car.command = 'S';
-    x = y = theta = 0;
+    x = y = theta = wheel_travel = 0;
     last = ping = scan = 0;
 }
 void sim_set_course(void) { obstacle_course = true; }
@@ -57,6 +58,11 @@ void sim_tick(uint32_t now) {
     } else if (fabs(dist) > .01)
         contacts++;
     theta += turn;
+    if (car.feedback) {
+        wheel_travel += fabs(l) * dt;
+        car_feedback(&car, (uint32_t)(wheel_travel * PULSES_PER_WHEEL_REV / WHEEL_CIRCUMFERENCE_MM),
+                     turn * 180 / pi, now);
+    }
     last = now;
     car_tick(&car, now, false);
     if (now - ping >= 150) {
@@ -76,7 +82,8 @@ const char *sim_line(const char *input, uint32_t now) {
         car_command(&car, 'S', now);
         return NULL;
     }
+    if (r.extended) car.feedback = car.imu_ready = true;
     apply_request(&car, &r, now);
-    telemetry(line, &car, r.seq);
+    telemetry(line, &car, &r, (Event){0}, false);
     return line;
 }

@@ -2,6 +2,8 @@ package org.embeddedcars.patrol;
 
 import android.app.*;
 import android.graphics.Color;
+import android.content.Intent;
+import android.text.InputType;
 import android.net.*;
 import android.os.*;
 import android.view.*;
@@ -22,13 +24,18 @@ public final class MainActivity extends Activity {
     final Handler ui = new Handler(Looper.getMainLooper());
     final ExecutorService worker = Executors.newSingleThreadExecutor();
     volatile Socket socket;
-    int session, seq;
+    volatile ServerSocket listener;
+    volatile int session;
+    int seq, taskId;
+    String task;
+    DriveLog log;
+    static final int EXPORT_LOG = 7;
     boolean online, connecting;
     char manual = 'S', desired = 'S';
     String address;
     Frame last;
     AtomicFile file;
-    long saved;
+    long saved, noRangeSince;
     int dp(int n) {
         return Math.round(getResources().getDisplayMetrics().density * n);
     }
@@ -37,6 +44,7 @@ public final class MainActivity extends Activity {
         super.onCreate(b);
         file = new AtomicFile(new File(getFilesDir(), "survey-v1"));
         address = getPreferences(0).getString("host", "192.168.4.1");
+        log = new DriveLog(getFilesDir());
         load();
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(1);
@@ -81,6 +89,15 @@ public final class MainActivity extends Activity {
         hold(drive, "左转", 'L');
         hold(drive, "前进", 'F');
         hold(drive, "右转", 'R');
+        LinearLayout moves = row(page);
+        button(moves, "持续前进", () -> {
+            if (last == null) { halt("请先连接小车"); return; }
+            halt("持续前进中 · 点停车结束");
+            desired = manual = 'F';
+        });
+        button(moves, "定距前进", () -> targetDialog(false));
+        button(moves, "定角转弯", () -> targetDialog(true));
+        button(moves, "导出日志", this::exportLog);
         LinearLayout actions = row(page);
         button(actions, "清路线", () -> {
             halt("路线已清空");
@@ -128,7 +145,53 @@ public final class MainActivity extends Activity {
             return true;
         });
     }
+    void targetDialog(boolean turn) {
+        halt("停车设置目标");
+        if (last == null || !last.extended || !last.imuReady) {
+            halt("定量运动需要新版固件和就绪的 IMU");
+            return;
+        }
+        EditText input = new EditText(this);
+        input.setSingleLine();
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | (turn ? InputType.TYPE_NUMBER_FLAG_SIGNED : 0));
+        input.setText(turn ? "90" : "50");
+        input.selectAll();
+        new AlertDialog.Builder(this).setTitle(turn ? "相对转角（度）" : "前进距离（厘米）")
+            .setMessage(turn ? "左转为正，右转为负，最多一圈。" : "输入 1 至 1000 厘米。")
+            .setView(input).setNegativeButton("取消", null).setPositiveButton("开始", (d, w) -> {
+                try {
+                    int value = Integer.parseInt(input.getText().toString().trim());
+                    if (value == 0 || value < (turn ? -360 : 1) || value > (turn ? 360 : 1000))
+                        throw new NumberFormatException();
+                    if (!online || last == null) { halt("连接已中断"); return; }
+                    taskId = taskId % 65535 + 1;
+                    task = (turn ? "A " : "D ") + taskId + " " + (turn ? value : value * 10);
+                    pilot.status = turn ? "转动 " + value + "°" : "前进 " + value + " cm";
+                    render();
+                } catch (NumberFormatException e) { halt("数值超出范围"); }
+            }).show();
+    }
+    void exportLog() {
+        halt("正在导出日志");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/tab-separated-values")
+            .addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE, "patrol-drive.tsv");
+        startActivityForResult(intent, EXPORT_LOG);
+    }
+    @Override protected void onActivityResult(int request, int result, Intent data) {
+        super.onActivityResult(request, result, data);
+        if (request == EXPORT_LOG && result == RESULT_OK && data != null && data.getData() != null) {
+            worker.execute(() -> {
+                try (OutputStream out = getContentResolver().openOutputStream(data.getData(), "wt")) {
+                    if (out == null) throw new IOException();
+                    log.export(out);
+                    ui.post(() -> halt("日志已导出"));
+                } catch (IOException e) { ui.post(() -> halt("日志导出失败")); }
+            });
+        }
+    }
     void halt(String why) {
+        noRangeSince = 0;
+        task = null;
         manual = desired = 'S';
         pilot.stop(why);
         render();
@@ -138,6 +201,8 @@ public final class MainActivity extends Activity {
             halt("请先连接小车");
             return;
         }
+        noRangeSince = 0;
+        task = null;
         manual = desired = 'S';
         pilot.start(m, grid, SystemClock.elapsedRealtime());
         render();
@@ -147,13 +212,21 @@ public final class MainActivity extends Activity {
         field.setSingleLine();
         field.setText(address);
         new AlertDialog.Builder(this)
-            .setTitle("车载热点或模拟器地址")
-            .setView(field)
-            .setMessage("新测区从当前车位建图。复用上次地图时，把车放回原起点并朝原方向。")
-            .setPositiveButton("新测区", (d, w) -> connect(field.getText().toString().trim(), false))
-            .setNeutralButton("复用原图", (d, w) -> connect(field.getText().toString().trim(), true))
-            .setNegativeButton("取消", null)
-            .show();
+            .setTitle("连接巡逻车")
+            .setMessage("先打开手机的 2.4 GHz 热点。小车上线后会主动连接。")
+            .setPositiveButton("等待小车", (d, w) -> mapChoice(null))
+            .setNeutralButton("输入 IP", (d, w) -> new AlertDialog.Builder(this)
+                .setTitle("小车或模拟器 IP").setView(field)
+                .setPositiveButton("下一步", (a, b) -> mapChoice(field.getText().toString().trim()))
+                .setNegativeButton("取消", null).show())
+            .setNegativeButton("取消", null).show();
+    }
+    void mapChoice(String host) {
+        new AlertDialog.Builder(this).setTitle("巡逻地图")
+            .setMessage("复用原图时，将车放回原起点并朝原方向。")
+            .setPositiveButton("新测区", (d, w) -> connect(host, false))
+            .setNeutralButton("复用原图", (d, w) -> connect(host, true))
+            .setNegativeButton("取消", null).show();
     }
     Socket newSocket() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -169,21 +242,41 @@ public final class MainActivity extends Activity {
         return new Socket();
     }
     void connect(String host, boolean reuse) {
-        if (host.isEmpty()) {
+        if (host != null && host.isEmpty()) {
             halt("请输入小车或模拟器的地址");
             return;
         }
-        disconnect("正在连接");
+        disconnect(host == null ? "等待热点内的小车" : "正在连接");
         connecting = true;
-        address = host;
-        getPreferences(0).edit().putString("host", address).apply();
+        final ServerSocket server;
+        try { server = host == null ? new ServerSocket() : null; }
+        catch (IOException e) { disconnect("无法监听"); return; }
+        listener = server;
+        if (host != null) {
+            address = host;
+            getPreferences(0).edit().putString("host", address).apply();
+        }
         final int generation = session;
         render();
         worker.execute(() -> {
             Socket candidate = null;
             try {
-                final Socket s = candidate = newSocket();
-                s.connect(new InetSocketAddress(host, 7070), 1800);
+                if (server != null) {
+                    server.setReuseAddress(true);
+                    server.bind(new InetSocketAddress(7071));
+                    candidate = server.accept();
+                    server.close();
+                } else {
+                    candidate = new Socket();
+                    try {
+                        candidate.connect(new InetSocketAddress(host, 7070), 1500);
+                    } catch (IOException first) {
+                        close(candidate);
+                        candidate = newSocket();
+                        candidate.connect(new InetSocketAddress(host, 7070), 1800);
+                    }
+                }
+                final Socket s = candidate;
                 s.setSoTimeout(550);
                 s.setTcpNoDelay(true);
                 InputStream in = s.getInputStream();
@@ -208,20 +301,22 @@ public final class MainActivity extends Activity {
     void exchange(int generation, InputStream in, OutputStream out, boolean first, boolean reuse) {
         if (generation != session || !online)
             return;
-        final String action = first ? "S" : pilot.wireCommand(grid, desired);
+        final boolean extended = first || last.extended;
+        final String action = first ? "S" : task != null ? task : pilot.wireCommand(grid, desired);
         final int id = seq = (seq + 1) & 65535;
         worker.execute(() -> {
             try {
-                out.write((id + " " + action + "\n").getBytes(StandardCharsets.US_ASCII));
-                out.flush();
-                StringBuilder line = new StringBuilder();
-                int c;
-                while ((c = in.read()) != '\n') {
-                    if (c < 32 || c > 126 || line.length() >= 256)
-                        throw new IOException("遥测中断");
-                    line.append((char) c);
+                String command = (extended ? "V " : "") + action;
+                String line;
+                try {
+                    line = request(in, out, id, command);
+                } catch (SocketTimeoutException e) {
+                    if (!first) throw e;
+                    command = "S"; // v1 firmware silently discards an unknown request
+                    line = request(in, out, id, command);
                 }
-                Frame f = Frame.parse(line.toString(), id);
+                Frame f = Frame.parse(line, id);
+                log.append(id, command, line);
                 ui.post(() -> {
                     if (generation != session)
                         return;
@@ -240,8 +335,15 @@ public final class MainActivity extends Activity {
                     grid.accept(f);
                     long now = SystemClock.elapsedRealtime();
                     desired = manual == 'S' ? pilot.step(grid, f, now) : manual;
-                    if (f.state == 5 || f.state == 4)
-                        halt("车端已停车，需重新操作");
+                    if (f.state != 3) noRangeSince = 0;
+                    else if (noRangeSince == 0) noRangeSince = now;
+                    if (f.state == 8) halt("驱动线停车电平异常，请断开电机支路检查");
+                    else if (f.state == 7 || f.state == 5 || f.state == 4)
+                        halt(f.state == 7 ? "反馈异常停车 · 检查 IMU 和码盘" : "车端已停车，需重新操作");
+                    else if (task != null && f.taskId == taskId && f.state == 6)
+                        halt("目标已完成");
+                    else if ((task != null || manual != 'S') && (f.state == 2 || (f.state == 3 && now - noRangeSince > 1800)))
+                        halt(f.state == 2 ? "遇障停车" : "回波无效，已停车");
                     render();
                     if (now - saved > 5000) {
                         save();
@@ -253,6 +355,17 @@ public final class MainActivity extends Activity {
                 failed(generation, e);
             }
         });
+    }
+    static String request(InputStream in, OutputStream out, int id, String command) throws IOException {
+        out.write((id + " " + command + "\n").getBytes(StandardCharsets.US_ASCII));
+        out.flush();
+        StringBuilder line = new StringBuilder();
+        int c;
+        while ((c = in.read()) != '\n') {
+            if (c < 32 || c > 126 || line.length() >= 511) throw new IOException("遥测中断");
+            line.append((char)c);
+        }
+        return line.toString();
     }
     void failed(int generation, Exception e) {
         ui.post(() -> {
@@ -270,6 +383,8 @@ public final class MainActivity extends Activity {
     void disconnect(String why) {
         ++session;
         online = connecting = false;
+        if (listener != null) try { listener.close(); } catch (IOException ignored) {}
+        listener = null;
         close(socket);
         socket = null;
         if (last != null)
@@ -284,9 +399,13 @@ public final class MainActivity extends Activity {
         info.setText((online ? "在线" : "离线") + "  ·  " + pilot.status + "  ·  " + grid.fix);
         String text = "灰色 未知　白色 可通行　深色 障碍";
         if (last != null) {
-            String[] names = {"待命", "行驶", "障碍停车", "回波无效", "失联停车", "按键停车"};
+            String[] names = {"待命", "行驶", "障碍停车", "回波无效", "失联停车", "按键停车", "目标完成", "反馈异常", "驱动线异常"};
             text = names[last.state] + "   前 " + distance(0) + "   左 " + distance(1) + "   右 "
                 + distance(2);
+            if (last.extended)
+                text += "\n左轮 " + last.speed + " mm/s　累计 " + last.travel + " mm　"
+                    + (last.imuReady ? "相对航向 " + last.angle + "°" : "IMU 未就绪")
+                    + (last.logFailed ? "　车端日志写入异常" : "");
         }
         ranges.setText(text);
         map.invalidate();
