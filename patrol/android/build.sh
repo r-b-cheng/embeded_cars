@@ -12,7 +12,7 @@ if [[ ! -f "$key" ]]; then
         -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug"
 fi
 mkdir -p build/classes build/dex ../dist
-"$bt/aapt" package -f -M AndroidManifest.xml -I "$jar" -F build/base.apk
+"$bt/aapt" package -f -A assets -S res -M AndroidManifest.xml -I "$jar" -F build/base.apk
 javac --release 8 -encoding UTF-8 -cp "$jar" -d build/classes src/org/embeddedcars/patrol/*.java
 jar cf build/classes.jar -C build/classes .
 "$bt/d8" --lib "$jar" --min-api 24 --output build/dex build/classes.jar

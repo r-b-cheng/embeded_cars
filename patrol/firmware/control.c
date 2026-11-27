@@ -13,7 +13,13 @@
 
 static const int bearing[SECTORS] = {0, 35, -35}; /* measure on fitted horn */
 
+int car_bearing(int sector) { return bearing[sector]; }
+
 int car_degrees(const Car *car) { return (int)lround(car->angle * 180 / PI); }
+
+void car_trace(Car *car, uint32_t now, int kind, int a, int b) {
+    car->trace[car->trace_count++ % TRACE_CAPACITY] = (Trace){now, kind, a, b};
+}
 
 void car_measure(Car *car, int sector, int mm, uint32_t now) {
     car->rays[sector] = (Ray){
@@ -21,28 +27,47 @@ void car_measure(Car *car, int sector, int mm, uint32_t now) {
         true};
 }
 
-void car_feedback(Car *car, uint32_t pulses, double delta_yaw_deg, uint32_t now) {
-    uint32_t edges = pulses - car->pulses;
-    double travel = edges * (WHEEL_CIRCUMFERENCE_MM / PULSES_PER_WHEEL_REV);
-    car->feedback = true;
-    car->pulses = pulses;
-    car->wheel_mm += travel;
-    if (edges)
-        car->silent_drive_ms = 0;
+void car_feedback(Car *car, uint32_t left_edges, uint32_t right_edges,
+                  double delta_yaw_deg, uint32_t now) {
+    const uint32_t counts[] = {left_edges, right_edges};
+    const int duty[] = {car->left, car->right};
+    static const double circumference[] = {WHEEL_CIRCUMFERENCE_MM, RIGHT_WHEEL_CIRCUMFERENCE_MM};
+    static const unsigned ppr[] = {PULSES_PER_WHEEL_REV, RIGHT_PULSES_PER_WHEEL_REV};
     uint32_t window = now - car->speed_stamp;
+    double delta[WHEELS];
+    car->feedback = true;
+    for (unsigned i = 0; i < WHEELS; ++i) {
+        WheelReading *w = &car->wheels[i];
+        uint32_t edges = counts[i] - w->pulses;
+        delta[i] = edges * circumference[i] / ppr[i];
+        w->mm += delta[i];
+        w->pulses = counts[i];
+        if (edges) w->silent_ms = 0;
+        if (duty[i]) {
+            w->sign = duty[i] > 0 ? 1 : -1;
+            w->driven_at = now;
+        } else if (now - w->driven_at > 250) w->sign = 0;
+        if (window >= 250) {
+            double turns = (counts[i] - w->window_pulses) / (double)ppr[i];
+            w->speed_mm_s = (int)lround(turns * circumference[i] * 1000 / window);
+            w->rpm10 = (int)lround(turns * 600000 / window);
+            w->window_pulses = counts[i];
+        }
+    }
+    int ls = car->wheels[0].sign, rs = car->wheels[1].sign;
+    /* Opposite commanded directions form a pivot. With a single encoder
+       channel per wheel, direction during unpowered pushing is unknown. */
+    double center = ls * rs < 0 ? 0 : (delta[0] + delta[1]) / 2;
+    car->center_mm += center;
     if (window >= 250) {
-        car->speed_mm_s = (int)lround((pulses - car->speed_pulses) *
-            (WHEEL_CIRCUMFERENCE_MM / PULSES_PER_WHEEL_REV) * 1000 / window);
+        car->center_speed = (int)lround((car->center_mm - car->window_mm) * 1000 / window);
+        car->window_mm = car->center_mm;
         car->speed_stamp = now;
-        car->speed_pulses = pulses;
     }
     double rotation = delta_yaw_deg * PI / 180;
-    /* Positive rotation is left. Recover center travel from the left wheel
-       during forward drive. A pivot has nominally zero center translation. */
-    if (car->left > 0 && car->right > 0) {
-        double center = travel + TRACK_MM * rotation / 2;
-        car->x += center * cos(car->angle + rotation / 2);
-        car->y += center * sin(car->angle + rotation / 2);
+    if (ls && ls == rs) {
+        car->x += ls * center * cos(car->angle + rotation / 2);
+        car->y += ls * center * sin(car->angle + rotation / 2);
     }
     car->yaw_deg += delta_yaw_deg;
     car->angle = remainder(car->angle + rotation, 2 * PI);
@@ -55,7 +80,7 @@ void car_task(Car *car, char action, int id, int target, uint32_t now) {
     car->state = IDLE;
     car->task_id = id;
     car->target = target;
-    car->task_origin = action == 'D' ? car->wheel_mm : car->yaw_deg;
+    car->task_origin = action == 'D' ? car->center_mm : car->yaw_deg;
     car->task_start = now;
     car->task_ended = false;
 }
@@ -65,9 +90,12 @@ bool car_command(Car *car, char command, uint32_t now) {
         (command != 'S' && (car->state == BUTTON || car->state == LINK_LOST || car->state == FEEDBACK_FAULT)))
         return false;
     if (command == 'S') {
-        car->state = IDLE;
-        car->silent_drive_ms = 0;
+        car->state = car->button_held ? BUTTON : IDLE;
+        car->wheels[0].silent_ms = car->wheels[1].silent_ms = 0;
+        car->fault = 0;
     }
+    if (command != car->command)
+        car_trace(car, now, TR_COMMAND, command, 0);
     car->command = command;
     car->last_command = now;
     return true;
@@ -84,6 +112,7 @@ static bool fresh(const Car *car, int sector, uint32_t now, unsigned limit) {
 }
 
 void car_tick(Car *car, uint32_t now, bool button) {
+    car->button_held = button;
     uint32_t elapsed = now - car->last_tick;
     car->last_tick = now;
     if (!car->feedback) { /* Legacy open-loop simulation. */
@@ -94,7 +123,9 @@ void car_tick(Car *car, uint32_t now, bool button) {
         car->y += distance * sin(car->angle + rotation / 2);
         car->angle = remainder(car->angle + rotation, 2 * PI);
     }
-    bool was_driving = car->left || car->right;
+    if (elapsed > car->max_tick_ms) car->max_tick_ms = elapsed;
+    if (car->left) car->wheels[0].silent_ms += elapsed;
+    if (car->right) car->wheels[1].silent_ms += elapsed;
     car->left = car->right = 0;
     if (car->state == OUTPUT_FAULT)
         return;
@@ -106,15 +137,17 @@ void car_tick(Car *car, uint32_t now, bool button) {
     if (car->state == BUTTON || car->state == LINK_LOST || car->state == FEEDBACK_FAULT)
         return;
     char motion = car->command;
-    if (was_driving)
-        car->silent_drive_ms += elapsed;
-    if (motion != 'S' && car->feedback &&
-        (!car->imu_ready || car->silent_drive_ms > 1000)) {
-        car->state = FEEDBACK_FAULT;
-        return;
+    if (motion != 'S' && car->feedback) {
+        if (!car->imu_ready) car->fault = 1;
+        else if (car->wheels[0].silent_ms > 1000) car->fault = 2;
+        else if (car->wheels[1].silent_ms > 1000) car->fault = 3;
+        if (car->fault) {
+            car->state = FEEDBACK_FAULT;
+            return;
+        }
     }
     if (motion == 'D' || motion == 'A') {
-        double progress = (motion == 'D' ? car->wheel_mm : car->yaw_deg) - car->task_origin;
+        double progress = (motion == 'D' ? car->center_mm : car->yaw_deg) - car->task_origin;
         if (car->target < 0)
             progress = -progress;
         if (car->task_ended || progress >= fabs((double)car->target)) {
@@ -124,6 +157,7 @@ void car_tick(Car *car, uint32_t now, bool button) {
         }
         uint32_t limit = motion == 'A' ? 15000u : 5000u + (uint32_t)car->target * 50u;
         if (!car->feedback || now - car->task_start > limit || progress < -12) {
+            car->fault = progress < -12 ? 5 : 4;
             car->state = FEEDBACK_FAULT;
             return;
         }

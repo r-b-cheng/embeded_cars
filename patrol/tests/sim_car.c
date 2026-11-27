@@ -6,8 +6,8 @@
 /* The simulated floor uses independent ground truth. Only the C controller's
    estimated pose and simulated sonar are exposed to the phone. */
 static Car car;
-static double x, y, theta, wheel_travel;
-static uint32_t last, ping;
+static double x, y, theta, wheel_travel, right_travel;
+static uint32_t last, ping, cursor;
 static unsigned scan;
 static bool obstacle_course;
 static int contacts;
@@ -36,8 +36,8 @@ void sim_reset(void) {
     contacts = 0;
     memset(&car, 0, sizeof car);
     car.command = 'S';
-    x = y = theta = wheel_travel = 0;
-    last = ping = scan = 0;
+    x = y = theta = wheel_travel = right_travel = 0;
+    last = ping = scan = cursor = 0;
 }
 void sim_set_course(void) { obstacle_course = true; }
 int sim_true_x(void) { return (int)lround(x); }
@@ -60,11 +60,18 @@ void sim_tick(uint32_t now) {
     theta += turn;
     if (car.feedback) {
         wheel_travel += fabs(l) * dt;
+        right_travel += fabs(r) * dt;
+        car.imu_stamp = now;
+        car.imu[2] = 16384;
+        car.imu[5] = (int)lround((r-l) / 135 * 180 / pi * 131);
         car_feedback(&car, (uint32_t)(wheel_travel * PULSES_PER_WHEEL_REV / WHEEL_CIRCUMFERENCE_MM),
+                     (uint32_t)(right_travel * RIGHT_PULSES_PER_WHEEL_REV / RIGHT_WHEEL_CIRCUMFERENCE_MM),
                      turn * 180 / pi, now);
     }
     last = now;
+    int state = car.state;
     car_tick(&car, now, false);
+    if (state != car.state) car_trace(&car, now, TR_CONTROL, car.state, car.fault);
     if (now - ping >= 150) {
         int sector = sequence[scan++ % 4];
         double a = theta + degrees[sector] * pi / 180;
@@ -72,6 +79,7 @@ void sim_tick(uint32_t now) {
         while (mm <= 4000 && !solid(x + mm * cos(a), y + mm * sin(a)))
             mm += 10;
         car_measure(&car, sector, mm <= 4000 ? mm : -1, now);
+        car.scan_sector = sequence[scan % 4];
         ping = now;
     }
 }
@@ -84,6 +92,6 @@ const char *sim_line(const char *input, uint32_t now) {
     }
     if (r.extended) car.feedback = car.imu_ready = true;
     apply_request(&car, &r, now);
-    telemetry(line, &car, &r, (Event){0}, false);
+    telemetry(line, &car, &r, (Event){0}, false, &cursor);
     return line;
 }

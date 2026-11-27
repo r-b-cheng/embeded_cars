@@ -12,34 +12,14 @@
 #include "wheel.h"
 #include "radio.h"
 #include "sensors.h"
+#include "protocol.h"
+#include "radio_uart.h"
 
 extern uint8_t _event_log_start[];
 static Journal journal;
 
-static Car car = {.command = 'S'};
+static Car car;
 static uint32_t ticks_us;
-/* An IMU burst can outlast the 16-byte UART FIFO at 115200 baud. */
-#define RX_CAPACITY 512u
-static volatile uint8_t rx[RX_CAPACITY];
-static volatile unsigned rx_head, rx_tail;
-static volatile bool rx_lost;
-
-static void radio_rx(void) {
-    UARTIntClear(UART1_BASE, UARTIntStatus(UART1_BASE, true));
-    if (UARTRxErrorGet(UART1_BASE)) {
-        UARTRxErrorClear(UART1_BASE);
-        rx_lost = true;
-    }
-    while (UARTCharsAvail(UART1_BASE)) {
-        uint8_t byte = (uint8_t)UARTCharGetNonBlocking(UART1_BASE);
-        unsigned next = (rx_head + 1) % RX_CAPACITY;
-        if (next == rx_tail) rx_lost = true;
-        else {
-            rx[rx_head] = byte;
-            rx_head = next;
-        }
-    }
-}
 enum { DISARMED, RISE, FALL, COMPLETE };
 static volatile unsigned echo_phase;
 static volatile uint32_t rise_ticks, width_ticks;
@@ -73,10 +53,7 @@ static void io_init(void) {
     GPIOPinConfigure(GPIO_PC4_U1RX);
     GPIOPinConfigure(GPIO_PC5_U1TX);
     GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5);
-    UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(), 115200,
-                        UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);
-    UARTIntRegister(UART1_BASE, radio_rx);
-    UARTIntEnable(UART1_BASE, UART_INT_RX | UART_INT_RT | UART_INT_OE);
+    radio_uart_init(SysCtlClockGet());
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_4);
     GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
     TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP);
@@ -120,19 +97,15 @@ static void scan(uint32_t now) {
         echo_phase = DISARMED;
         car_measure(&car, order[index], mm, now);
         index = (index + 1) % 4;
+        car.scan_sector = order[index];
         TimerMatchSet(WTIMER1_BASE, TIMER_B, (20000 - pulses[order[index]]) * ticks_us - 1);
         changed = now;
         waiting = false;
     }
 }
 
-void radio_write(const char *s) {
-    /* Echo, encoder edges and UART reception continue during transmission. */
-    while (*s)
-        UARTCharPut(UART1_BASE, *s++);
-}
-
 int main(void) {
+    car.command = 'S';
     FPUEnable();
     Board_Init();
     Wheel_Init(&g_board_port);
@@ -147,19 +120,11 @@ int main(void) {
     for (;;) {
         uint32_t now = clib_millis();
         scan(now);
-        if (rx_lost) {
-            rx_lost = false;
-            rx_tail = rx_head;
-            radio_reset(now);
-        }
-        for (int n = 0; n < 64 && rx_tail != rx_head; ++n) {
-            char byte = (char)rx[rx_tail];
-            rx_tail = (rx_tail + 1) % RX_CAPACITY;
-            radio_byte(byte, now);
-        }
-        radio_tick(now);
+        radio_uart_service(&car, now);
         if (now - car.last_tick >= 10) {
+            bool was_ready = car.imu_ready;
             sensors_sample(&car, now);
+            if (was_ready != car.imu_ready) car_trace(&car, now, TR_IMU, car.imu_ready, 0);
             car_tick(&car, now, !GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4));
             if (left != car.left || right != car.right) {
                 Wheel_Set(car.left, car.right);
@@ -172,6 +137,7 @@ int main(void) {
                     Wheel_Stop();
                     if (GPIOPinRead(GPIO_PORTB_BASE, motor_pins)) {
                         car.state = OUTPUT_FAULT;
+                        car.fault = 6;
                         car.command = 'S';
                     }
                 }
@@ -190,6 +156,7 @@ int main(void) {
                     }
                 }
             }
+            if (car.state != last_state) car_trace(&car, now, TR_CONTROL, car.state, car.fault);
             last_state = car.state;
         }
     }

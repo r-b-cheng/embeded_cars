@@ -23,7 +23,8 @@ bool parse_request(const char *line, Request *r) {
     if (!integer(&line, 0, 65535, &seq) || *line++ != ' ')
         return false;
     r->seq = (unsigned)seq;
-    r->extended = strncmp(line, "V ", 2) == 0;
+    r->full = strncmp(line, "W ", 2) == 0;
+    r->extended = r->full || strncmp(line, "V ", 2) == 0;
     if (r->extended) line += 2;
     r->action = *line++;
     if (r->extended && (r->action == 'D' || r->action == 'A')) {
@@ -51,7 +52,8 @@ void apply_request(Car *car, const Request *r, uint32_t now) {
     car_command(car, r->action, now);
 }
 
-int telemetry(char reply[REPLY_SIZE], const Car *v, const Request *request, Event e, bool log_failed) {
+int telemetry(char reply[REPLY_SIZE], const Car *v, const Request *request, Event e, bool log_failed, uint32_t *trace_cursor) {
+    _Static_assert(REPLY_SIZE >= 64 * 12 + 2, "64 bounded ASCII fields");
     int state = v->state;
     if (!request->extended && state > BUTTON) state = state == DONE ? IDLE : NO_RANGE;
     int n = snprintf(reply, REPLY_SIZE, "T %u %d %d %d %d", request->seq, state, (int)v->x, (int)v->y,
@@ -64,10 +66,34 @@ int telemetry(char reply[REPLY_SIZE], const Car *v, const Request *request, Even
     if (request->extended) {
         n += snprintf(reply + n, REPLY_SIZE - (size_t)n,
             " %lu %lu %lu %d %d %d %d %d %d %d %d %d %lu %lu %lu %d",
-            (unsigned long)v->last_tick, (unsigned long)v->pulses, (unsigned long)(uint32_t)v->wheel_mm,
-            v->speed_mm_s, v->imu_ready, v->task_id,
+            (unsigned long)v->last_tick, (unsigned long)v->wheels[0].pulses, (unsigned long)(uint32_t)v->wheels[0].mm,
+            v->wheels[0].speed_mm_s, v->imu_ready, v->task_id,
             v->imu[0], v->imu[1], v->imu[2], v->imu[3], v->imu[4], v->imu[5],
             (unsigned long)e.id, (unsigned long)e.ms, (unsigned long)e.code, log_failed);
+    }
+    if (request->full) {
+        uint32_t pending = v->trace_count - *trace_cursor;
+        uint32_t missed = pending > TRACE_CAPACITY ? pending - TRACE_CAPACITY : 0;
+        uint32_t id = 0;
+        Trace trace = {0};
+        if (pending) {
+            *trace_cursor += missed;
+            trace = v->trace[*trace_cursor % TRACE_CAPACITY];
+            id = ++*trace_cursor;
+        }
+        const WheelReading *right = &v->wheels[1];
+        n += snprintf(reply + n, REPLY_SIZE - (size_t)n,
+            " %lu %lu %d %d %d %d %lu %d %d %c %d %lu %d %d %d %d %d"
+            " %lu %lu %lu %lu %lu %lu %d %d %d %lu",
+            (unsigned long)right->pulses, (unsigned long)(uint32_t)right->mm,
+            right->speed_mm_s, v->wheels[0].rpm10, right->rpm10, v->center_speed,
+            (unsigned long)(uint32_t)v->center_mm, v->left, v->right, v->command,
+            v->target, (unsigned long)v->imu_stamp, car_bearing(FRONT), car_bearing(LEFT),
+            car_bearing(RIGHT), car_bearing(v->scan_sector), v->fault,
+            (unsigned long)v->uart_errors, (unsigned long)v->radio_resets,
+            (unsigned long)v->invalid_requests, (unsigned long)v->max_tick_ms,
+            (unsigned long)id, (unsigned long)trace.ms, trace.kind, trace.a, trace.b,
+            (unsigned long)missed);
     }
     reply[n++] = '\n';
     reply[n] = 0;

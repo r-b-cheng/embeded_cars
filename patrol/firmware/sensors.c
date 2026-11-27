@@ -8,15 +8,18 @@
 #include "clib_port.h"
 #include <stdlib.h>
 
-static volatile uint32_t edges;
+static volatile uint32_t edges[WHEELS];
+static const uint8_t pins[WHEELS] = {GPIO_PIN_5, GPIO_PIN_4};
 static void encoder_edge(void) {
-    static uint32_t previous;
-    GPIOIntClear(GPIO_PORTA_BASE, GPIO_PIN_5);
+    static uint32_t previous[WHEELS];
+    uint32_t pending = GPIOIntStatus(GPIO_PORTA_BASE, true) & (GPIO_PIN_4 | GPIO_PIN_5);
+    GPIOIntClear(GPIO_PORTA_BASE, pending);
     uint32_t now = clib_micros();
-    if (now - previous >= 1000) {
-        ++edges;
-        previous = now;
-    }
+    for (unsigned i = 0; i < WHEELS; ++i)
+        if ((pending & pins[i]) && now - previous[i] >= 1000) {
+            ++edges[i];
+            previous[i] = now;
+        }
 }
 
 static void bus_init(void) {
@@ -26,12 +29,12 @@ static void bus_init(void) {
 }
 
 void sensors_init(void) {
-    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_5);
-    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_5, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
-    GPIOIntTypeSet(GPIO_PORTA_BASE, GPIO_PIN_5, GPIO_RISING_EDGE);
+    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, (GPIO_PIN_4 | GPIO_PIN_5));
+    GPIOPadConfigSet(GPIO_PORTA_BASE, (GPIO_PIN_4 | GPIO_PIN_5), GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOIntTypeSet(GPIO_PORTA_BASE, (GPIO_PIN_4 | GPIO_PIN_5), GPIO_RISING_EDGE);
     GPIOIntRegister(GPIO_PORTA_BASE, encoder_edge);
-    GPIOIntClear(GPIO_PORTA_BASE, GPIO_PIN_5);
-    GPIOIntEnable(GPIO_PORTA_BASE, GPIO_PIN_5);
+    GPIOIntClear(GPIO_PORTA_BASE, (GPIO_PIN_4 | GPIO_PIN_5));
+    GPIOIntEnable(GPIO_PORTA_BASE, (GPIO_PIN_4 | GPIO_PIN_5));
     SysCtlPeripheralEnable(SYSCTL_PERIPH_I2C1);
     while (!SysCtlPeripheralReady(SYSCTL_PERIPH_I2C1)) {}
     GPIOPinConfigure(GPIO_PA6_I2C1SCL);
@@ -102,7 +105,7 @@ void sensors_sample(Car *car, uint32_t now) {
                 car->imu[i] = (int16_t)((bytes[j] << 8) | bytes[j + 1]);
             }
             if (!car->imu_ready) {
-                bool still = !car->left && !car->right && edges == calibration_edges &&
+                bool still = !car->left && !car->right && edges[0] + edges[1] == calibration_edges &&
                     abs(car->imu[3]) < 655 && abs(car->imu[4]) < 655 && abs(car->imu[5]) < 655;
                 if (still) {
                     sum += car->imu[5];
@@ -113,19 +116,19 @@ void sensors_sample(Car *car, uint32_t now) {
                 } else {
                     sum = samples = 0;
                 }
-                calibration_edges = edges;
+                calibration_edges = edges[0] + edges[1];
             } else if (now - last <= 100) {
                 yaw = GYRO_Z_SIGN * (car->imu[5] - bias) / 131.0 * (now - last) / 1000;
             } else {
                 car->imu_ready = false;
                 sum = samples = 0;
             }
-            last = now;
+            car->imu_stamp = last = now;
         } else {
             car->imu_ready = false;
             sum = samples = 0;
         }
         next = now + (configured ? 10 : 1000);
     }
-    car_feedback(car, edges, yaw, now);
+    car_feedback(car, edges[0], edges[1], yaw, now);
 }

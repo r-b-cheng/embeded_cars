@@ -1,4 +1,4 @@
-# 车端控制协议（v1 与 v2）
+# 车端控制协议（v1、v2 和 v3）
 
 公开演示固件使用车载热点。手机通过车载 ESP-01S 的 WPA2 热点打开 TCP 连接。默认地址 `192.168.4.1:7070`。TM4C 通过 UART1 管理热点、解析 ESP 的 `+IPD` 长度帧，使用 `AT+CIPSEND` 回传遥测。第一个连接占用控制权；其他连接的数据被忽略。ESP 需使用正常启动的 AT 固件，默认 AP 地址与 DHCP 配置应可用。[ESP8266 AT TCP 服务端示例](https://docs.espressif.com/projects/esp-at/en/release-v2.2.0.0_esp8266/AT_Command_Examples/TCP-IP_AT_Examples.html)
 
@@ -27,7 +27,7 @@ T seq state x y heading   tF mmF xF yF aF   tL mmL xL yL aL   tR mmR xR yR aR
 
 | 命令 | 单位与行为 |
 |---|---|
-| `17 V D 9 500` | 任务 9，从本次起点向前累计 500 mm 左轮轮程，支持 10–10000 mm |
+| `17 V D 9 500` | 任务 9，从本次起点前进 500 mm（双轮固件按车体中心路程判定），支持 10–10000 mm |
 | `18 V A 10 -90` | 任务 10，从当前航向右转 90°，支持 ±1–360° |
 | `19 V S` | 撤销任务、停车并读取遥测 |
 
@@ -43,3 +43,22 @@ board_ms pulses wheel_mm speed_mm_s imu_ready task_id ax ay az gx gy gz event_id
 - 六轴字段按加速度 XYZ、角速度 XYZ 排列，均为有符号原始读数。量程 ±2 g 和 ±250°/s，分别除以 16384 和 131 得到 g 和 °/s。imu_ready 为 0 时，原始值可能未更新。[MPU-6050 寄存器说明](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map.pdf)
 - 每次连接从 Flash 中最旧的有效事件开始补传，随后传新事件。event_id 为 0 表示本帧无事件。可按同一车辆的事件号去重。event_ms 以该事件发生时的那次上电为起点。事件码 1 启动、2 控制连接关闭、3 续约超时、4 SW1 停车、5 运动反馈故障、6 遇障停车、7 停车输出复写后仍异常。log_failed 为 1 表示本次启动中持久化写入失败。
 - 手机 TSV 每行依次为手机 Unix 毫秒、帧序号、下发命令和完整响应，用制表符分隔。原始遥测保留单空格分隔，便于按协议重放。
+
+## 双轮遥测（v3）
+
+握手及后续请求使用 `W` 前缀，例如 `1 W S`、`2 W D 1 100`。每次只保留一笔未确认请求。App 先以 W 握手，旧固件无响应时依次尝试 V 和 v1。旧客户端可继续使用原 21/37 个字段。W 的前 37 个字段与 V 相同，随后依次追加 27 项：
+
+```text
+right_pulses right_mm right_mm_s left_rpm10 right_rpm10 center_mm_s center_mm
+pwm_left pwm_right applied_action target imu_ms bearing_front bearing_left bearing_right servo_target
+fault uart_errors radio_resets invalid_requests max_control_interval_ms
+trace_id trace_ms trace_kind trace_a trace_b trace_skipped
+```
+
+- 左轮脉冲、里程、速度沿用 V 字段。每轮 RPM 为码盘所在车轮轴速率幅值，两个 rpm10 字段除以 10 得 RPM。编码器每轮独立标定。左右同向时中心路程按两轮增量的均值，命令原地旋转时中心近似不动；车轮方向由驱动指令推断。无驱动方向信息时手推只累加无符号路程。上电清零。
+- PWM 是最近控制周期的有符号百分比，applied_action 为车端当前命令。target 为最近定量任务的参数，D 用 mm，A 用度。手机 TSV 中包含完整下发参数。IMU 时间戳为板端毫秒。bearing 和 servo_target 是经安装标定的车体系指令角，实际舵轴角度无独立传感器。每束原有 heading 字段为采样时世界系波束朝向。
+- fault 依次为 0 正常、1 IMU 未就绪、2 左轮无脉冲、3 右轮无脉冲、4 任务超时或缺少反馈、5 转角反向、6 停车电平异常。超声、SW1 和失联停车见 state。uart_errors 计 UART/缓冲异常恢复次数；其后为无线链路重置（含启动）、无效请求数和启动以来控制间隔最大值。
+- RAM 环保存最近 128 条事件，每帧从旧到新回传 1 条，trace_id 为 0 表示无事件。类型 1 命令变更（a 为 ASCII），2 控制状态（a 为 state，b 为 fault），3 IMU 就绪变化（a 为 0/1），4 无线重置（阶段、步骤），5 无效请求（长度、连接号），6 UART 恢复，7 TCP 连接变化（连接号、开闭）。trace_skipped 标记覆盖的条数，新连接可能重放同一批事件。Flash 事件仍有独立 ID。
+- 手机正常遥测行保留原 TSV 格式；以 `#` 开头的命令列为手机事件，包括 TX 请求、STATUS、SMART、DECISION、COMPLETE 和 GAP。文件完整保留已记录的历史，日志写入失败或缓冲溢出后报告缺口。
+
+手机智能模式使用[系统提示词](android/assets/system-prompt.txt)。ADB 工具输出包含单位的命名 JSON 字段、决策票据和局部地图，API 模式使用相同观测。手机给 LLM 的六轴数据已换算为 g 与 °/s，导出的原始帧保留芯片读数。

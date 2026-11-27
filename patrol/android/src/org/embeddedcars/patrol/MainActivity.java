@@ -11,7 +11,11 @@ import android.widget.*;
 import android.util.AtomicFile;
 import java.io.*;
 import java.net.*;
+import java.util.Locale;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,12 +27,18 @@ public final class MainActivity extends Activity {
     Button link;
     final Handler ui = new Handler(Looper.getMainLooper());
     final ExecutorService worker = Executors.newSingleThreadExecutor();
+    static final ThreadPoolExecutor mapWrites = new ThreadPoolExecutor(1,1,0,TimeUnit.SECONDS,
+        new ArrayBlockingQueue<>(1),new ThreadPoolExecutor.DiscardOldestPolicy());
     volatile Socket socket;
     volatile ServerSocket listener;
     volatile int session;
     int seq, taskId;
     String task;
     DriveLog log;
+    SmartPilot smart;
+    TextView details;
+    long received;
+    String sent = "S";
     static final int EXPORT_LOG = 7;
     boolean online, connecting;
     char manual = 'S', desired = 'S';
@@ -45,6 +55,7 @@ public final class MainActivity extends Activity {
         file = new AtomicFile(new File(getFilesDir(), "survey-v1"));
         address = getPreferences(0).getString("host", "192.168.4.1");
         log = new DriveLog(getFilesDir());
+        smart = new SmartPilot(this);
         load();
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(1);
@@ -66,6 +77,8 @@ public final class MainActivity extends Activity {
             else
                 connectDialog();
         });
+        button(head, "遥测", this::detailsDialog);
+        button(head, "智能", this::smartDialog);
         info = new TextView(this);
         page.addView(info);
         map = new MapView(this);
@@ -171,6 +184,46 @@ public final class MainActivity extends Activity {
                 } catch (NumberFormatException e) { halt("数值超出范围"); }
             }).show();
     }
+    void note(String kind, String text) { log.append(seq, "#"+kind, text); }
+    void detailsDialog() {
+        details = new TextView(this); details.setPadding(dp(14),dp(8),dp(14),dp(8));
+        ScrollView scroll = new ScrollView(this); scroll.addView(details);
+        AlertDialog d = new AlertDialog.Builder(this).setTitle("实时遥测").setView(scroll)
+            .setPositiveButton("关闭",null).create();
+        d.setOnDismissListener(v -> details = null); d.show(); render();
+    }
+    EditText field(LinearLayout form, String label, String value) {
+        TextView name = new TextView(this); name.setText(label); form.addView(name);
+        EditText input = new EditText(this); input.setSingleLine(); input.setText(value); form.addView(input);
+        return input;
+    }
+    void smartDialog() {
+        halt("设置智能任务");
+        LinearLayout form = new LinearLayout(this); form.setOrientation(1);
+        form.setPadding(dp(16),0,dp(16),0);
+        EditText mission = field(form,"任务",getPreferences(0).getString("mission","勘察前方可通行区域并建图"));
+        EditText endpoint = field(form,"完整 Chat Completions URL",getPreferences(0).getString("endpoint",""));
+        EditText model = field(form,"模型名称",getPreferences(0).getString("model",""));
+        EditText key = field(form,"API Key（仅本次会话）","");
+        key.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        ScrollView scroll = new ScrollView(this); scroll.addView(form);
+        java.util.function.Consumer<SmartPilot.Mode> begin = mode -> {
+            String url = endpoint.getText().toString().trim(), engine = model.getText().toString().trim();
+            String goal = mission.getText().toString().trim();
+            smart.start(mode,goal,url,engine,key.getText().toString().trim());
+            if (smart.mode != SmartPilot.Mode.OFF) {
+                android.content.SharedPreferences.Editor prefs = getPreferences(0).edit().putString("mission",goal);
+                if (mode == SmartPilot.Mode.API || (url.isEmpty() && engine.isEmpty()))
+                    prefs.putString("endpoint",url).putString("model",engine);
+                prefs.apply();
+            }
+        };
+        new AlertDialog.Builder(this).setTitle("智能控制").setView(scroll)
+            .setMessage("手机 API 将任务、实时遥测和局部地图发至所填服务。电脑 ADB 在本机读取。每步结束重新观测。")
+            .setPositiveButton("手机 API",(d,w)->begin.accept(SmartPilot.Mode.API))
+            .setNeutralButton("电脑 ADB",(d,w)->begin.accept(SmartPilot.Mode.ADB))
+            .setNegativeButton("取消",null).show();
+    }
     void exportLog() {
         halt("正在导出日志");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/tab-separated-values")
@@ -180,16 +233,18 @@ public final class MainActivity extends Activity {
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request == EXPORT_LOG && result == RESULT_OK && data != null && data.getData() != null) {
-            worker.execute(() -> {
+            new Thread(() -> {
                 try (OutputStream out = getContentResolver().openOutputStream(data.getData(), "wt")) {
                     if (out == null) throw new IOException();
                     log.export(out);
                     ui.post(() -> halt("日志已导出"));
                 } catch (IOException e) { ui.post(() -> halt("日志导出失败")); }
-            });
+            },"patrol-export").start();
         }
     }
     void halt(String why) {
+        smart.cancel();
+        if (!why.equals(pilot.status)) note("STATUS",why);
         noRangeSince = 0;
         task = null;
         manual = desired = 'S';
@@ -204,6 +259,7 @@ public final class MainActivity extends Activity {
         noRangeSince = 0;
         task = null;
         manual = desired = 'S';
+        smart.cancel();
         pilot.start(m, grid, SystemClock.elapsedRealtime());
         render();
     }
@@ -279,7 +335,7 @@ public final class MainActivity extends Activity {
                 final Socket s = candidate;
                 s.setSoTimeout(550);
                 s.setTcpNoDelay(true);
-                InputStream in = s.getInputStream();
+                InputStream in = new BufferedInputStream(s.getInputStream());
                 OutputStream out = s.getOutputStream();
                 ui.post(() -> {
                     if (generation != session) {
@@ -301,20 +357,27 @@ public final class MainActivity extends Activity {
     void exchange(int generation, InputStream in, OutputStream out, boolean first, boolean reuse) {
         if (generation != session || !online)
             return;
-        final boolean extended = first || last.extended;
+        final String prefix = first || last.full ? "W " : last.extended ? "V " : "";
         final String action = first ? "S" : task != null ? task : pilot.wireCommand(grid, desired);
         final int id = seq = (seq + 1) & 65535;
         worker.execute(() -> {
             try {
-                String command = (extended ? "V " : "") + action;
+                String command = prefix + action;
                 String line;
+                log.append(id,"#TX",command);
                 try {
                     line = request(in, out, id, command);
                 } catch (SocketTimeoutException e) {
                     if (!first) throw e;
-                    command = "S"; // v1 firmware silently discards an unknown request
-                    line = request(in, out, id, command);
+                    command = "V S";
+                    log.append(id,"#TX",command);
+                    try { line = request(in,out,id,command); }
+                    catch (SocketTimeoutException old) {
+                        command = "S"; log.append(id,"#TX",command);
+                        line = request(in,out,id,command);
+                    }
                 }
+                final String accepted = command;
                 Frame f = Frame.parse(line, id);
                 log.append(id, command, line);
                 ui.post(() -> {
@@ -332,6 +395,8 @@ public final class MainActivity extends Activity {
                         pilot.status = "已连接";
                     }
                     last = f;
+                    sent = accepted;
+                    received = SystemClock.elapsedRealtime();
                     grid.accept(f);
                     long now = SystemClock.elapsedRealtime();
                     desired = manual == 'S' ? pilot.step(grid, f, now) : manual;
@@ -341,9 +406,10 @@ public final class MainActivity extends Activity {
                     else if (f.state == 7 || f.state == 5 || f.state == 4)
                         halt(f.state == 7 ? "反馈异常停车 · 检查 IMU 和码盘" : "车端已停车，需重新操作");
                     else if (task != null && f.taskId == taskId && f.state == 6)
-                        halt("目标已完成");
+                        { if (smart.mode == SmartPilot.Mode.OFF) halt("目标已完成"); else smart.completed(); }
                     else if ((task != null || manual != 'S') && (f.state == 2 || (f.state == 3 && now - noRangeSince > 1800)))
                         halt(f.state == 2 ? "遇障停车" : "回波无效，已停车");
+                    smart.tick();
                     render();
                     if (now - saved > 5000) {
                         save();
@@ -360,11 +426,13 @@ public final class MainActivity extends Activity {
         out.write((id + " " + command + "\n").getBytes(StandardCharsets.US_ASCII));
         out.flush();
         StringBuilder line = new StringBuilder();
+        long deadline = SystemClock.elapsedRealtime()+550;
         int c;
         while ((c = in.read()) != '\n') {
-            if (c < 32 || c > 126 || line.length() >= 511) throw new IOException("遥测中断");
+            if (SystemClock.elapsedRealtime() > deadline || c < 32 || c > 126 || line.length() >= 895) throw new IOException("遥测中断");
             line.append((char)c);
         }
+        if (SystemClock.elapsedRealtime() > deadline) throw new IOException("遥测超时");
         return line.toString();
     }
     void failed(int generation, Exception e) {
@@ -407,7 +475,19 @@ public final class MainActivity extends Activity {
                     + (last.imuReady ? "相对航向 " + last.angle + "°" : "IMU 未就绪")
                     + (last.logFailed ? "　车端日志写入异常" : "");
         }
+        if (last != null && last.full) {
+            text = Frame.STATES[last.state]+"  前 "+distance(0)+"  左 "+distance(1)+"  右 "+distance(2)
+                +String.format(Locale.ROOT,"\n左/右 %.1f / %.1f RPM　车速 %d mm/s　累计 %d mm",
+                    last.leftRpm10/10.0,last.rightRpm10/10.0,last.centerSpeed,last.centerTravel);
+            if (last.fault != 0) text += "　"+Frame.FAULTS[last.fault];
+        }
+        if (log.diskError || log.dropped.get() > 0) text += "　日志缺口 "+log.dropped.get();
         ranges.setText(text);
+        if (details != null) {
+            if (last == null || !last.full) details.setText("连接双轮固件后显示全部字段");
+            else try { details.setText(Telemetry.snapshot(last,grid,sent).toString(2)); }
+                catch (org.json.JSONException e) { details.setText("遥测字段无效"); }
+        }
         map.invalidate();
     }
     String distance(int i) {
@@ -415,15 +495,21 @@ public final class MainActivity extends Activity {
         return mm < 0 ? "—" : (mm / 10) + " cm";
     }
     void save() {
+        final byte[] evidence = grid.evidence.clone();
+        final double x = grid.x, y = grid.y, heading = grid.heading;
+        final AtomicFile destination = file;
+        mapWrites.execute(() -> saveMap(destination,x,y,heading,evidence));
+    }
+    static void saveMap(AtomicFile file,double x,double y,double heading,byte[] evidence) {
         FileOutputStream fos = null;
         try {
             fos = file.startWrite();
             DataOutputStream out = new DataOutputStream(fos);
             out.writeInt(Grid.N);
-            out.writeDouble(grid.x);
-            out.writeDouble(grid.y);
-            out.writeDouble(grid.heading);
-            out.write(grid.evidence);
+            out.writeDouble(x);
+            out.writeDouble(y);
+            out.writeDouble(heading);
+            out.write(evidence);
             out.flush();
             file.finishWrite(fos);
         } catch (IOException e) {
@@ -449,6 +535,9 @@ public final class MainActivity extends Activity {
         super.onPause();
     }
     protected void onDestroy() {
+        smart.cancel();
+        smart.network.shutdownNow();
+        log.closing = true;
         worker.shutdownNow();
         super.onDestroy();
     }

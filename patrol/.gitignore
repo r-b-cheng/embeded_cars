@@ -3,3 +3,4 @@
 /android/.gradle/
 
 /dist/*.idsig
+__pycache__/

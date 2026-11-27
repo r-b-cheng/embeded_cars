@@ -27,20 +27,24 @@ static int phase, step, owner, source;
 static uint32_t started, remaining;
 static Car *vehicle;
 static Journal *journal;
-static uint32_t cursor;
+static uint32_t cursor, trace_cursor;
 #ifdef PATROL_PERSONAL
 static uint32_t last_dial;
 static char gateway[16];
 #endif
 static char line[96], request[40], reply[REPLY_SIZE];
 static unsigned used, size;
+static Request deferred;
+static bool has_deferred;
+static uint32_t deferred_at;
 static bool discard, handshaken;
 static uint32_t payload_at;
 
 static void release(void) {
     if (handshaken) ++vehicle->disconnects;
-    cursor = 0;
+    cursor = trace_cursor = 0;
     car_command(vehicle, 'S', vehicle->last_tick);
+    has_deferred = false;
     owner = -1;
     handshaken = false;
     size = 0;
@@ -48,6 +52,9 @@ static void release(void) {
 }
 
 void radio_reset(uint32_t now) {
+    radio_flush_tx();
+    car_trace(vehicle, now, TR_RADIO_RESET, phase, step);
+    ++vehicle->radio_resets;
     release();
     used = remaining = 0;
     phase = RETRY;
@@ -95,7 +102,7 @@ void radio_tick(uint32_t now) {
 static void respond(const Request *r, uint32_t now) {
     Event event = r->extended ? journal_after(journal, cursor) : (Event){0};
     if (event.id) cursor = event.id;
-    int n = telemetry(reply, vehicle, r, event, journal && journal->failed);
+    int n = telemetry(reply, vehicle, r, event, journal && journal->failed, &trace_cursor);
     char send[32];
     snprintf(send, sizeof send, "AT+CIPSEND=%d,%d\r\n", owner, n);
     phase = PROMPT;
@@ -116,14 +123,24 @@ static void command_byte(char c, uint32_t now) {
     request[size] = 0;
     Request r = {0};
     bool valid = !discard && parse_request(request, &r);
-    if (!valid)
+    if (!valid) {
+        ++vehicle->invalid_requests;
+        car_trace(vehicle, now, TR_INVALID, size, source);
         r.action = 'S';
+    }
     size = 0;
     discard = false;
-    /* A new request can arrive just before the previous SEND OK. Accept STOP
-       immediately; a conforming client retries by reconnecting on a lost reply. */
-    if (phase != LISTEN && r.action != 'S')
+    /* A phone can receive the frame before ESP emits its SEND OK.
+       Keep one conforming stop-and-wait request across that boundary. */
+    if (phase == SENDING && valid && handshaken) {
+        if (has_deferred) { radio_reset(now); return; }
+        if (r.action == 'S') apply_request(vehicle, &r, now);
+        deferred = r;
+        deferred_at = now;
+        has_deferred = true;
         return;
+    }
+    if (phase != LISTEN && r.action != 'S') return;
     if (!handshaken && r.action != 'S')
         return;
     if (valid && r.action == 'S')
@@ -170,14 +187,22 @@ static void event(uint32_t now) {
     } else if (strlen(line) == 9 && !strcmp(line + 1, ",CONNECT") && line[0] >= '0' &&
                line[0] <= '4' && (phase == LISTEN || phase == DIAL) && owner < 0) {
         owner = line[0] - '0';
+        car_trace(vehicle, now, TR_LINK, owner, 1);
         phase = LISTEN;
     } else if (strlen(line) == 8 && !strcmp(line + 1, ",CLOSED") && line[0] - '0' == owner) {
+        car_trace(vehicle, now, TR_LINK, owner, 0);
         if (phase == LISTEN)
             release();
         else
             radio_reset(now);
     } else if (phase == SENDING && !strcmp(line, "SEND OK")) {
         phase = LISTEN;
+        if (has_deferred) {
+            has_deferred = false;
+            if (now - deferred_at >= 650) { radio_reset(now); return; }
+            apply_request(vehicle, &deferred, deferred_at);
+            respond(&deferred, now);
+        }
     } else if (!strcmp(line, "ERROR") || !strcmp(line, "FAIL") || !strcmp(line, "SEND FAIL")) {
         radio_reset(now);
     }

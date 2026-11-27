@@ -6,6 +6,7 @@
 #include "protocol.h"
 
 static char out[512];
+void radio_flush_tx(void) {}
 void radio_write(const char *data) { snprintf(out, sizeof out, "%s", data); }
 static void bytes(const char *s, uint32_t now) {
     while (*s)
@@ -154,21 +155,21 @@ static void measured_motion(void) {
     Request r;
     assert(!parse_request("1 V D 0 100", &r) && !parse_request("1 V A 1 0", &r));
     assert(parse_request("1 V D 1 100", &r));
-    car_feedback(&c, 0, 0, 0);
+    car_feedback(&c, 0, 0, 0, 0);
     for (unsigned i = 0; i <= 12; i++) {
         uint32_t now = i * 100;
         apply_request(&c, &r, now);
-        car_feedback(&c, i, 0, now);
+        car_feedback(&c, i, i, 0, now);
         ranges(&c, now, 900, 900, 900);
         car_tick(&c, now, false);
         assert(c.state == (i >= 10 ? DONE : DRIVING));
     }
-    assert(c.speed_mm_s >= 100 && c.speed_mm_s < 105 && c.left == 0);
+    assert(c.wheels[0].speed_mm_s >= 100 && c.wheels[0].speed_mm_s < 105 && c.left == 0);
     assert(parse_request("2 V A 2 -90", &r));
     for (unsigned i = 0; i <= 10; ++i) {
         uint32_t now = 2000 + 10 * i;
         apply_request(&c, &r, now);
-        car_feedback(&c, 12 + i, i ? -10 : 0, now);
+        car_feedback(&c, 12 + i, 12 + i, i ? -10 : 0, now);
         ranges(&c, now, 900, 900, 900);
         car_tick(&c, now, false);
         assert(c.state == (i >= 9 ? DONE : DRIVING));
@@ -177,10 +178,10 @@ static void measured_motion(void) {
     for (unsigned now = 2200; now <= 3400; now += 100) {
         car_command(&c, 'F', now);
         ranges(&c, now, 900, 900, 900);
-        car_feedback(&c, c.pulses, 0, now);
+        car_feedback(&c, c.wheels[0].pulses + 1, c.wheels[1].pulses, 0, now);
         car_tick(&c, now, false);
     }
-    assert(c.state == FEEDBACK_FAULT && !c.left);
+    assert(c.state == FEEDBACK_FAULT && c.fault == 3 && !c.left);
     car_command(&c, 'S', 3500);
     c.imu_ready = false;
     car_command(&c, 'R', 3500);
@@ -196,11 +197,27 @@ static void measured_motion(void) {
     assert(c.state == OUTPUT_FAULT && !c.left && !c.right);
 }
 
+static void dual_wheels(void) {
+    Car c = {.command='S', .imu_ready=true, .left=30, .right=30};
+    car_feedback(&c, 10, 20, 0, 1000);
+    assert(c.wheels[0].rpm10 == 300 && c.wheels[1].rpm10 == 600);
+    assert(c.wheels[0].speed_mm_s == 102 && c.wheels[1].speed_mm_s == 204);
+    assert(c.center_speed == 153 && fabs(c.center_mm - 153.15) < .1);
+    c.left = -30;
+    car_feedback(&c, 12, 22, 15, 1200);
+    assert(fabs(c.center_mm - 153.15) < .1 && car_degrees(&c) == 15);
+    car_tick(&c,1210,true);
+    car_command(&c,'S',1211);
+    assert(c.state == BUTTON && !car_command(&c,'F',1212));
+    car_tick(&c,1220,false);
+    assert(car_command(&c,'S',1221) && c.state == IDLE);
+}
 int main(void) {
     safety();
     api();
     at_server();
     persistence();
     measured_motion();
+    dual_wheels();
     puts("C motion interlocks and ESP-AT transcript passed");
 }
